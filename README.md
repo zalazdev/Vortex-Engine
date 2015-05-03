@@ -9,7 +9,7 @@ Target: Windows. But you can modify the source library for porting to Linux and 
 
 Dependencies:
   1) for Programming only in lua: DLLS and the executable for Windows.
-  2) for extending or programming in C++/Lua: SFML / LUA 5.2 / LUA 5.1 (luajit) (i will include all this libs in a package).
+  2) for extending or programming in C++/Lua: SFML 2.2 / LUA 5.2 / LUA 5.1 (luajit) (i will include all this libs in a package).
 
 Use for build: Code::Blocks with its integrated MinGW (SJLJ version).
                GCC 4.6 & 4.7 Series.
