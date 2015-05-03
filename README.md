@@ -7,7 +7,7 @@ Status: Pre-launching phase.
 
 Conctac to me:
 
-enmarey2012@hotmail.com 
-enmanuelrey2012@gmail.com
+enmarey2012@hotmail.com ; 
+enmanuelrey2012@gmail.com ;
 
 
