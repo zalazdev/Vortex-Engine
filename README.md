@@ -1,5 +1,5 @@
 # Vortex-Engine
-Lua graphics engine based on SFML
+Lua graphics engine based on SFML (Based on performance and programmer-friendly).
 
 This project will have a MIT license (the same as SFML).
 
@@ -23,7 +23,7 @@ enmanuelrey2012@gmail.com ;
 
 --- Español ------
 
-Motor gráfico con scripting en Lua basado en SFML
+Motor gráfico con scripting en Lua basado en SFML (Basado en el rendimiento y la facilidad hacia el programador)
 
 El proyecto tendrá una licensia MIT (la misma que SFML).
 
