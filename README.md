@@ -21,31 +21,6 @@ Conctac to me:
 enmarey2012@hotmail.com ; 
 enmanuelrey2012@gmail.com ;
 
-
--------- Español ----- 
-
-Motor gráfico con scripting en Lua basado en SFML
-
-El proyecto tendrá una licensia MIT (la misma que SFML).
-
-Status: Pre-launching phase.
-
-Target: Windows. But you can modify the source library for porting to Linux and Mac , even on android and IOS.
-
-Dependencies:
-  1) for Programming only in lua: DLLS and the executable for Windows.
-  2) for extending or programming in C++/Lua: SFML 2.2 / LUA 5.2 / LUA 5.1 (luajit) (i will include all this libs in a package).
-
-Use for build: Code::Blocks with its integrated MinGW (SJLJ version).
-               GCC 4.6 & 4.7 Series.
-
-Bit-Arquitecture: 32-bits based graphic engine.  (Even you can port to 64).
-
-Conctac to me:
-
-enmarey2012@hotmail.com ; 
-enmanuelrey2012@gmail.com ;
-
 --- Español ------
 
 Motor gráfico con scripting en Lua basado en SFML
