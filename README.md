@@ -9,10 +9,9 @@ Target: Windows. But you can modify the source library for porting to Linux and 
 
 Dependencies:
   1) for Programming only in lua: DLLS and the executable for Windows.
-  2) for extending or programming in C++/Lua: SFML 2.2 / LUA 5.2 / LUA 5.1 (luajit) (i will include all this libs in a package).
+  2) for extending or programming in C++/Lua: SFML 2.2 / LUA 5.1 (luajit) (i will include all this libs in a package).
 
-Use for build: Code::Blocks with its integrated MinGW (SJLJ version).
-               GCC 4.6 & 4.7 Series.
+Use for build: Visual Studio 2013 .
 
 Bit-Arquitecture: 32-bits based graphic engine.  (Even you can port to 64).
 
@@ -35,13 +34,13 @@ Dependencias:
 
 1) Para programar solo en Lua: DLLS y el ejecutable para Windows.
   
-2) Para extender o programar en C++/Lua: SFML 2.2 / LUA 5.2 / LUA 5.1 (luajit) (Incluiré todas estas librerias en el paquete).
+2) Para extender o programar en C++/Lua: SFML 2.2 LUA 5.1 (luajit) (Incluiré todas estas librerias en el paquete).
 
-Construido con: Code::Blocks con el MinGW integrado (SJLJ version).
+Construido con: Visual Studio 2013.
                
 GCC 4.6 & 4.7 Series.
 
-Bit-Arquitectura: 32-bits motor gráfico. (Podrias portarlo a 64-bits) 
+Bit-Arquitectura: 32-bits motor gráfico. (Se podría llevar a 64-bits) 
 
 
 Conctactame:
