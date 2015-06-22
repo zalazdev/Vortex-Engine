@@ -1,0 +1,4593 @@
+package.preload['init_engine']=assert(loadstring('\
+\
+-- localazing the values make it more faster.\
+\
+local function foo()\
+\
+  if not unpack then \
+    unpack = table.unpack \
+  end \
+\
+  local tr = table.remove \
+  local typen = type \
+  local toNumber = tonumber \
+  local toString = tostring \
+  local _error = error \
+  local prt = print \
+\
+\
+  display = {}\
+\
+  sys = {}\
+  sys.console = true -- false ; \
+  sys.maxWindows = 3 -- 3 ;\
+  sys.antiAlising = 8 -- 8 ;\
+  sys.stopOnError = false \
+  sys.fps_promedy = 20\
+  sys.fps = 61 \
+\
+\
+  function close_app( _bool )\
+    \
+    _bool = _bool or sys.stopOnError \
+\
+    if _bool then \
+\
+      for i = 1 , #_WINDOWS do \
+       \
+         destroy_window( _WINDOWS[i].window )\
+\
+      end \
+\
+    end \
+\
+  end\
+\
+\
+  function expectedVal( val , _type , msg , concat )\
+    \
+    local def = "Arg #1 , expected ".. _type .. " got "..typen( val ) \
+  \tmsg = msg or def \
+\
+    if concat then msg = msg.." "..def ; end \
+     \
+     if _type == "number" then \
+        \
+       if typen( toNumber( val ) ) ~= "number" then close_app() ; _error( msg , 3 ) end \
+\
+     elseif typen( val ) ~= _type then close_app() ; _error( msg , 3 ) end    \
+\
+  end\
+\
+\
+  function getNumArg( num_arg , func )\
+     \
+      expectedVal( num_arg , "number" )\
+      expectedVal( func , "function" )\
+\
+      local _t = { func() }\
+\
+     return _t[ num_arg ] \
+  end\
+\
+  function warning( msg )\
+     \
+     if msg == nil then msg = "" end \
+\
+      prt( "WARNING: "..toString( msg ) ) \
+\
+  end\
+\
+  function separator( str )\
+      \
+      local msg = "------ "..str.." ------" ;\
+      prt( msg )\
+\
+  end\
+\
+  function getNumArgSelf( num_arg , obj , func )\
+     \
+      expectedVal( num_arg , "number" )\
+      expectedVal( obj , "table" )\
+      expectedVal( func , "string" )\
+\
+      local _t = { obj[ func ]( obj ) }\
+\
+     return _t[ num_arg ] \
+  end\
+\
+  function removeTable( t , obj )\
+      \
+     expectedVal( t , "table" , "removeTable error:" , true ) \
+     \
+     local removed = false \
+     for i = 1 , #t do \
+        \
+        if t[i] == obj then \
+           tr( t , i )\
+           removed = true \
+           break \
+        end   \
+    \
+     end \
+     \
+     return removed  \
+  end\
+\
+  function findTable( t , field , obj )\
+   \
+    expectedVal( t , "table" , "findTable error:" , true ) \
+\
+    local index ; \
+\
+    for i = 1 , #t do \
+       if t[i] == obj then index = i end \
+       break \
+    end   \
+     \
+     return index\
+  end\
+\
+  function toboolean( str )\
+    \
+    local num = tonumber( str ) or 0 ;  \
+    if str == "true" or num > 0 or ( str ~= false and str ~= nil ) then \
+       return true \
+    else \
+       return false \
+    end \
+\
+  end\
+\
+  function formatNumber( ... )\
+     \
+      local t = {}\
+      local argun = { ... }\
+      for i = 1 , #argun do \
+        \
+        t[ #t + 1] = toNumber( string.format( "%g" , argun[ i ] ) )\
+    \
+      end \
+     \
+     return unpack( t )\
+  end \
+\
+end -- fin de foo.\
+\
+\
+local r , msg = pcall( foo ) ; msg = msg or "" ; \
+print( "Init engine: "..tostring( r ) , msg )\
+\
+',"@./.\\init_engine.lua"))package.preload['loader']=assert(loadstring('\
+\
+local function load( file_name )\
+    require( file_name ) \
+end \
+\
+if pcall( function() load( "vortex-engine" ) end ) then -- load the engine.\
+\
+    if _argn_ then \
+    \tif not pcall( function() dofile( _argn_ ) end ) then \
+          print( "Cannot open: ".._argn_ )\
+        end \
+    else\
+\
+\t\tif not pcall( function() load( "main" ) end  ) then  -- load main.\
+\t\t   if not pcall( function() load( "main2" ) end ) then  -- load main2 if main fail.\
+\t\t       print( "Cannot open: main/main2" )\
+\t\t   end  \
+\t\tend \
+\
+   end \
+\
+else \
+   print( "Cannot load vortex-engine modules" )\
+   print( "Search path:" )\
+   print( package.path )\
+end \
+\
+',"@./.\\loader.lua"))package.preload['math_import']=assert(loadstring('\
+local function fact( number )\
+    \
+    if number > 1 then\t \
+       \
+       local val = 1\
+\t   for i = 2 , number do \
+          val = val * i\
+\t   end \t\
+       \
+        return val\
+\telse\
+\
+\
+\t    return 1 \
+\tend        \t\
+\t\
+end\
+\
+\
+\
+local function round( number )\
+\
+\tlocal _number = math.floor( number )\
+\
+\tif number - _number >= 0.5 then \
+\
+\t\t return math.ceil( number )\
+\telse\
+\t\
+\t    return _number \
+\tend     \t \
+\t\
+end\
+\
+local function rndseed()\
+\
+\
+\tlocal a = {}\
+\tlocal b = {}\
+\tlocal c = {}\
+\
+    \
+    local function  decompose( _t )\
+\
+          local str = tostring( _t )\
+\t            str = str:gsub( "table: " , "" )\
+\
+\t      local cache = 0\
+\
+\t\t  for i = 1 , #str do \
+\
+\t\t\t  local num = tonumber( string.char( string.byte( str , i ) ) ) \
+\
+\t\t\t  if type( num ) ~= "number" then \
+\t\t\t    \
+\t\t\t     num = string.byte( str , i )\
+\t\t\t  \
+\t\t\t  end \
+\
+\t\t\t  cache = cache + num \
+\
+    \t  end \
+\
+       return cache\
+    end \
+\
+    local _a , _b , _c = decompose( a ) , decompose( b ) , decompose( c )\
+\
+    a , b , c = nil , nil , nil ;\
+\
+\treturn math.ceil( _a * _b / _c ) , _a , _b \
+end\
+\
+\
+local function random( init , final )\
+\
+\tif init > final then error( "Initial value is higher than the final one" ) end \
+\
+\tlocal seed , _a , _b = rndseed()\
+\
+    local dif = final - init + 1 \
+\
+    while seed > dif do \
+\
+    \tseed = seed - dif \
+\
+    end \
+\
+    seed = seed - 1\
+\
+    local rndnumber ;\
+\
+    if _a > _b then \
+\
+        rndnumber = init + seed \
+\
+    else \
+\
+        rndnumber = final - seed \
+\
+    end \
+\
+\
+  return rndnumber\t\
+end\
+\
+\
+math.fact = fact \
+math.round = round\
+math.eRandom = random \
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+',"@./.\\math_import.lua"))package.preload['lua_enum']=assert(loadstring('\
+\
+local function luaEnum( str )\
+\
+\tlocal function super_gsub( str , ... )\
+\t   local arg = { ... } \
+\t   for i = 1 , #arg do \
+\t       str = string.gsub( str , arg[i] , "" ) \
+\t   end \
+\t     return str ;\
+\tend \
+\
+\tlocal function char( str , i )\
+\
+\t   return string.char( string.byte( str , i ) )\
+\tend \
+\
+\tlocal enum = { [1] = {} }\
+\t      enum.register = ""\
+\t      enum.value = -1\
+\t      enum.declare = 1\
+\t      enum.tags = {} \
+\t      enum.cache = ""\
+\t      enum.getName = false\
+\t      enum.getVar = false \
+\
+\tlocal f_str = super_gsub( str , "\\n"  , " " , ";" ) \
+\
+\tf_str = f_str:gsub( "{" , "={" )\
+\
+\tfor i = 1 , #f_str do \
+\
+\t    local c = char( f_str , i )\
+\
+\t    if c ~= "{" and c ~= "}" then \
+\
+\t\t    if enum.getName ~= true then \
+\t\t       \
+\t\t       if c == "=" then enum.getName = true ; enum[1][ enum.cache ] = {}\
+\
+\t\t       else  enum.cache = enum.cache .. c  \
+\
+\t\t       end \
+\
+\t\t    elseif c ~= "," and c ~= "=" and c ~= "{" and c ~= "}" and c ~= "-" and not tonumber( c ) then \
+\
+\t\t    \tenum.register = enum.register .. c ;\
+\t  \
+\t\t    else\
+\t            \
+\t            if enum.register ~= "" then   \
+\t                \
+\
+\t            \tlocal _value ; if char( f_str , i+1 ) == "-" then _value = -tonumber( char( f_str , i+2 ) ) else tonumber( char( f_str , i+1 ) ) end \
+\
+\t\t\t    \tenum.value = _value or ( enum.value + 1 )\
+\
+\t\t\t    \tenum[1][ enum.cache ][ enum.register ] = enum.value \
+\
+\t\t        end\
+\
+\t\t        enum.register = ""\
+\
+\t\t    end \
+\
+\t\telseif c == "}" then \
+\
+\t\t\t    if enum.register ~= "" then \
+\
+\t\t\t\t\tenum.value = tonumber( char( f_str , i+1 ) ) or ( enum.value + 1 )\
+\
+\t\t\t    \tenum[1][ enum.cache ][ enum.register ] = enum.value \
+\
+\t\t\t    \tenum.register = ""\
+\
+\t\t        end \
+\
+\t\t\t enum.getName = false ; enum.tags[ #enum.tags+1 ] = enum.cache ; enum.cache = "" ; enum.register = "" ; enum.value = -1 ; \
+\
+\t    end\
+\
+\tend\
+\
+\tlocal ft = {}\
+\
+\
+\tfor i = 1 , #enum.tags do \
+\
+\t\tft[ #ft + 1 ] = enum[1][ enum.tags[i] ]\
+\
+\tend \
+\
+\t   return ft  \
+\
+end \
+\
+\
+return luaEnum \
+\
+\
+',"@./.\\lua_enum.lua"))package.preload['lua_extension']=assert(loadstring('\
+\
+local string = string \
+\
+local function char( str , i , j ) return string.char( string.byte( str , i , j or i ) ) end \
+\
+\
+local function remove_ext( str , ext )\
+\
+local _str = string.reverse( str )\
+\
+ if string.find( str , "."..ext ) then\
+\
+    for i = 1 , #_str do \
+\
+      local ch = char( _str , 1 )\
+      \
+      if ch ~= "\\\\" then \
+         _str = string.gsub( _str , ch , "" , 1 )\
+      else \
+      \t break \
+      end \
+\
+    end \
+\
+ else print( "Extension: ".."."..ext.." Not found" )\
+\
+ end \t\
+   \
+   return string.reverse( _str ) \
+end \
+\
+\
+return remove_ext \
+ \
+\
+',"@./.\\lua_extension.lua"))package.preload['lua_zip']=assert(loadstring('\
+local remove_ext = require "lua_extension"\
+local zip_path = \'"\'..remove_ext( PATH , "exe" ) .. "zip\\\\7za"..\'"\'\
+\
+local function archive( name , files , pass )\
+\
+     local _files = ""\
+     for i = 1 , #files do \
+        _files = _files .." " .. files[ i ] ;    \
+     end   \
+\
+   local str = zip_path .." a ".. name .. _files.. " -y "  ; \
+   if pass then str = str .. "-p"..pass ; end \
+    \
+   os.execute( str )  \
+end \
+\
+\
+-- archive( "myarch.zip" , { "1.txt" , "2.txt" } , "feo" )    \
+\
+\
+local function unpack_archive( name , pass , out )\
+\
+   local str = zip_path .. " e " .. name .. " -y -aou "  ; \
+   if pass then str = str .. "-p".. pass ; end \
+   if out then str = str .. " -o".. out ; end \
+        \
+   os.execute( str )  \
+end \
+\
+-- unpack_archive( "myarch.zip" , "feo" , "C:\\\\Users\\\\Enmanuel\\\\Desktop" )  \
+\
+\
+local zip = { pack = archive , unpack = unpack_archive } \
+\
+return zip ;',"@./.\\lua_zip.lua"))package.preload['cifrado_hash']=assert(loadstring('\
+\
+local to_string = tostring \
+local to_number = tonumber \
+local char = string.char \
+local byte = string.byte \
+local ceil = math.ceil \
+\
+local cripto = {}\
+\
+-- local function d_print( ... ) for i = 1 , #arg do print( arg[i] ) end ; return unpack( arg ) end  \
+\
+local function tochar( str , init , final ) return char( byte( str , init , final or init ) ) end \
+\
+local function key_generator( key ) -- Retorna numeros de la clave en una tabla.\
+   \
+   local key_len = #key \
+   local key_tab = {}\
+\
+   for i = 1 , key_len do \
+      \
+      key_tab[ #key_tab + 1 ] = byte( key , i ) \
+    \
+   end \
+  \
+   return key_tab \
+end  \
+\
+local function make_numeric( str_tab ) -- Retorna numeros de una str en una tabla. ( t[1] = a -> t[1] = 97 ).\
+\
+   for i = 1 , #str_tab do \
+      \
+      local n = to_string( byte( str_tab[i] ) ) ; \
+      while #n < 3 do n = "0"..n end \
+      str_tab[ i ] = n   \
+\
+   end \
+   \
+   return str_tab \
+end \
+\
+local function make_numeric2( str_tab ) -- Retorna numeros de una str en una tabla. ( t[1] = a -> t[1] = 97 ).\
+\
+   for i = 1 , #str_tab do \
+      \
+      local n = to_string( byte( str_tab[i] ) ) ; \
+      while #n < 2 and i < #str_tab do n = "0"..n end  \
+      str_tab[ i ] = n   \
+\
+   end \
+   \
+   return str_tab \
+end \
+\
+local function make_table( str ) -- Retorna una tabla que contiene que caracteres de una str. ( abc -> t = { a , b , c } )\
+\
+   local tab = {}\
+\
+   for i = 1 , #str do \
+       \
+        tab[ i ] = tochar( str , i )\
+\
+   end \
+   \
+   return tab \
+end \
+\
+local function interchange( tab , a , b )\
+    tab[ a ] , tab[ b ] = tab[ b ] , tab[ a ] ;\
+end\
+\
+local function move( key , tab )\
+\
+    local key_len = #key\
+    local tab_len = #tab\
+    local pos = 1 + key_len \
+\
+    for i = 1 , tab_len do \
+\
+         while pos > tab_len do  \
+              pos = pos - tab_len\
+         end \
+         \
+         interchange( tab , i , pos ) \
+         pos = ( i + 1 ) + key_len  --- reset the position     \
+ \
+    end \
+\
+   return tab  \
+end \
+\
+local function move2( key , char_tab )\
+\
+    local key_tab = key_generator( key )\
+    local num_array = make_numeric( char_tab  ) \
+    local num_tab = make_table( table.concat( num_array ) )\
+\
+    local pos = 1 + key_tab[ 1 ]  \
+    local key_count = 1\
+    local num_tab_len = #num_tab\
+\
+    for i = 1 , num_tab_len do \
+\
+         while pos > num_tab_len do  \
+              pos = pos - num_tab_len\
+         end \
+         \
+         interchange( num_tab , i , pos ) \
+         \
+         key_count = key_count + 1 ; if key_count > #key_tab then key_count = 1 end \
+         pos = i + 1 + key_tab[ key_count ] --- reset the position     \
+ \
+    end\
+   return num_tab  \
+end \
+\
+local function move_back( key , tab )\
+\
+    local key_len = #key\
+    local tab_len = #tab\
+    local pos = #tab + key_len  \
+\
+    for i = tab_len , 1 , -1 do \
+\
+         while pos > tab_len do  \
+              pos = pos - tab_len\
+         end \
+         \
+         interchange( tab , i , pos ) \
+         pos = ( i - 1 ) + key_len  --- reset the position     \
+ \
+    end \
+   \
+   return tab \
+end\
+\
+local function move_back2( key , char_tab )\
+\
+    local key_tab = key_generator( key )\
+    local num_array = make_numeric2( char_tab  ) \
+    local num_tab = make_table( table.concat( num_array ) )\
+\
+    local key_count = #key_tab ;\
+    local num_tab_len = #num_tab\
+     \
+    if num_tab_len <= #key_tab then \
+       key_count = num_tab_len \
+    else \
+        if num_tab_len % key_count ~= 0 then \
+             key_count = num_tab_len - ( key_count * math.floor( num_tab_len / key_count ) ) \
+        end \
+    end  \
+\
+    local pos = num_tab_len + key_tab[ key_count ] \
+\
+    for i = num_tab_len , 1 , -1 do\
+\
+         while pos > num_tab_len do  \
+              pos = pos - num_tab_len\
+         end \
+         \
+         interchange( num_tab , i , pos ) \
+         \
+         key_count = key_count - 1 ; if key_count <= 0 then key_count = #key_tab end \
+         pos = i - 1 + key_tab[ key_count ] --- reset the position     \
+ \
+    end \
+\
+   return num_tab  \
+end \
+\
+local function make_string( num_tab )\
+\
+     local final_str = ""\
+\
+     for i = 1 , #num_tab , 2 do \
+        \
+        local n1 = num_tab[ i ] \
+        local n2 = num_tab[ i + 1 ] or "" ;                            \
+        final_str = final_str .. char( n1 .. n2 ) ;\
+\
+     end \
+   \
+   return final_str \
+end \
+\
+local function make_number( str )\
+    \
+    local num_tab = {}\
+\
+    for i = 1 , #str do         \
+        local raw_n = byte( tochar( str , i ) )  \
+        num_tab[ #num_tab + 1 ] = tochar( raw_n , 1 )\
+        num_tab[ #num_tab + 1 ] = tochar( raw_n , 2 )\
+    end \
+   \
+   return num_tab\
+end\
+\
+function cripto.encrypt( key , msg )\
+\
+   local char_tab = make_table( msg ) -- array de caracteres. \
+\
+         move( key , char_tab ) -- se mueven los caracteres. \
+\
+   local num_tab = move2( key , char_tab )  -- se convierte en array de numeros y se mueven.\
+\
+   local str_tab = make_string( num_tab ) -- se convierten los caractere en numeros y se concatena. (retona string).\
+   \
+   return str_tab\
+end \
+\
+function cripto.decrypt( key , msg )\
+    \
+    local str_tab = make_table( msg )\
+    \
+    local num_tab = move_back2( key , str_tab ) \
+    \
+    local char_tab = {}\
+\
+    for i = 1 , #num_tab , 3 do \
+\
+        local n1 = num_tab[ i ] \
+        local n2 = num_tab[ i + 1 ] or "" ;  \
+        local n3 = num_tab[ i + 2 ] or "" ;     \
+\
+        char_tab[ #char_tab + 1 ] = char( n1..n2..n3 )\
+\
+    end \
+\
+    local final_tab = move_back( key , char_tab )\
+   \
+   return table.concat( final_tab )\
+end\
+\
+\
+return cripto \
+',"@./.\\cifrado_hash.lua"))package.preload['cifrado_ukey']=assert(loadstring('\
+\
+\
+if not loadstring then \
+   loadstring = load \
+end \
+\
+local byte = string.byte\
+local char = string.char\
+\
+local c = {}\
+\
+local function char_byte( val , from )\
+   \
+   local from = from or 1\
+  \
+   return char( byte( val , from ) )\
+end\
+\
+\
+local function extra_f( clave , clave_len , deriv , deriv2 )\
+    \
+    deriv = deriv + 1 \
+    deriv2 = deriv2 + 1    \
+\
+    local total = 0\
+\
+    for i = 1 , clave_len do \
+    \
+       total = total + tonumber( char_byte( clave , i ) ) \
+\
+    end \
+\
+    total = total * math.ceil( ( deriv^2 * deriv2 ) / ( deriv2^2 * deriv ) ) \
+    \
+    total = math.ceil( total / (#clave + deriv + deriv2 - clave_len + 1 ) ) ; \
+\
+   return total \
+end \
+\
+local function bonus_f( clave , clave_len )\
+\
+  if clave_len then \
+      if clave_len <= 0 or clave_len > #clave then \
+         clave_len = #clave\
+      end   \
+  else \
+    clave_len = #clave \
+  end \
+\
+  local s = {}\
+\
+    for i = 1 , clave_len do \
+    \
+       s[i] = tonumber( char_byte( clave , i ) ) \
+\
+    end \
+\
+   return s \
+end\
+\
+local function setclave( str )\
+    \
+    local f_str = "" \
+    for i = 1 , #str do \
+          \
+        f_str = f_str .. byte( str , i )       \
+ \
+    end \
+   \
+   return f_str \
+end \
+\
+\
+function c.encriptar( _msg , _clave , bonus )\
+\
+  _clave = setclave( _clave )\
+\
+  local msg_len = string.len( _msg )\
+\
+\tlocal clave_len = string.len( _clave )\
+\
+\tlocal deriv = tonumber( char_byte( _clave ) ) \
+\
+  local deriv2 = tonumber( char_byte( _clave , clave_len ) ) \
+\
+\tlocal extra = extra_f( _clave , clave_len , deriv , deriv2 ) \
+\
+  local bonus = bonus_f( _clave , bonus )\
+\
+  local cuenta_bonus = 1\
+\
+\tlocal final_string = ""\
+\
+\t\t  local s = {}\
+\
+\t\t  for i = 1 , msg_len do\
+\
+\t\t      s[ i ] = char_byte( _msg , i )\
+\t\t \
+\t\t  end \t\
+\
+\
+   \t\tfor i = 1 , msg_len do \
+\
+\t\t\t   for w = 1 , extra + bonus[ cuenta_bonus ] do\
+\t\t\t   \t\
+\t\t\t\t     final_string = final_string..string.char( math.random( 1  , 127 ) )\
+\
+\t\t\t\t     if w == extra + bonus[ cuenta_bonus ] then\
+\t\t\t\t      \
+\t\t\t\t         final_string = final_string..s[ i ]\
+\
+\t\t\t\t     end \t\
+\t\t\t   \
+\t\t\t   end\
+\
+             cuenta_bonus = cuenta_bonus + 1 \
+\
+             if cuenta_bonus > #bonus then \
+                cuenta_bonus = 1\
+             end    \
+\
+\t\tend     \
+\
+\t   for w = 1 , extra do\
+\t   \t\
+\t\t     final_string = final_string..string.char( math.random( 1 , 127 ) )\t\
+\t   \
+\t   end\
+   \
+\
+   return final_string\
+end \
+\
+\
+function c.decriptar( _string , _clave , bonus )\
+    \
+    _clave = setclave( _clave )\
+\
+    local clave_len = string.len( _clave )\
+\
+    local deriv = tonumber( char_byte( _clave ) ) \
+\
+    local deriv2 = tonumber( char_byte( _clave , clave_len ) ) \
+\
+    local extra = extra_f( _clave , clave_len , deriv , deriv2 ) \
+\
+    local bonus = bonus_f( _clave , bonus )\
+\
+    local str = ""\
+    local prev = 0\
+    local cuenta_bonus = 1\
+\
+    while prev + extra + bonus[ cuenta_bonus ] +  1 < string.len( _string ) do\
+\
+        str = str .. char_byte( _string , prev + extra + bonus[ cuenta_bonus ] + 1  ) \
+        prev = prev + extra + bonus[ cuenta_bonus ] + 1\
+\
+             cuenta_bonus = cuenta_bonus + 1 \
+\
+             if cuenta_bonus > #bonus then \
+                cuenta_bonus = 1\
+             end    \
+    \
+    end\
+\
+   return str \
+end\
+\
+\
+return c \
+\
+\
+',"@./.\\cifrado_ukey.lua"))package.preload['save_table']=assert(loadstring('--[[\
+\tSave Table to File/Stringtable\
+\tLoad Table from File/Stringtable\
+\tv 0.94\
+\t\
+\tLua 5.1 compatible\
+\t\
+\tUserdata and indices of these are not saved\
+\tFunctions are saved via string.dump, so make sure it has no upvalues\
+\tReferences are saved\
+\t----------------------------------------------------\
+\ttable.save( table [, filename] )\
+\t\
+\tSaves a table so it can be called via the table.load function again\
+\ttable must a object of type \'table\'\
+\tfilename is optional, and may be a string representing a filename or true/1\
+\t\
+\ttable.save( table )\
+\t\ton success: returns a string representing the table (stringtable)\
+\t\t(uses a string as buffer, ideal for smaller tables)\
+\ttable.save( table, true or 1 )\
+\t\ton success: returns a string representing the table (stringtable)\
+\t\t(uses io.tmpfile() as buffer, ideal for bigger tables)\
+\ttable.save( table, "filename" )\
+\t\ton success: returns 1\
+\t\t(saves the table to file "filename")\
+\ton failure: returns as second argument an error msg\
+\t----------------------------------------------------\
+\ttable.load( filename or stringtable )\
+\t\
+\tLoads a table that has been saved via the table.save function\
+\t\
+\ton success: returns a previously saved table\
+\ton failure: returns as second argument an error msg\
+\t----------------------------------------------------\
+\t\
+\tchillcode, http://lua-users.org/wiki/SaveTableToFile\
+\tLicensed under the same terms as Lua itself.\
+]]--\
+do\
+\t-- declare local variables\
+\t--// exportstring( string )\
+\t--// returns a "Lua" portable version of the string\
+\tlocal function exportstring( s )\
+\t\ts = string.format( "%q",s )\
+\t\t-- to replace\
+\t\ts = string.gsub( s,"\\\\\\n","\\\\n" )\
+\t\ts = string.gsub( s,"\\r","\\\\r" )\
+\t\ts = string.gsub( s,string.char(26),"\\"..string.char(26)..\\"" )\
+\t\treturn s\
+\tend\
+--// The Save Function\
+function table.save(  tbl,filename )\
+\tlocal charS,charE = "   ","\\n"\
+\tlocal file,err\
+\t-- create a pseudo file that writes to a string and return the string\
+\tif not filename then\
+\t\tfile =  { write = function( self,newstr ) self.str = self.str..newstr end, str = "" }\
+\t\tcharS,charE = "",""\
+\t-- write table to tmpfile\
+\telseif filename == true or filename == 1 then\
+\t\tcharS,charE,file = "","",io.tmpfile()\
+\t-- write table to file\
+\t-- use io.open here rather than io.output, since in windows when clicking on a file opened with io.output will create an error\
+\telse\
+\t\tfile,err = io.open( filename, "w" )\
+\t\tif err then return _,err end\
+\tend\
+\t-- initiate variables for save procedure\
+\tlocal tables,lookup = { tbl },{ [tbl] = 1 }\
+\tfile:write( "return {"..charE )\
+\tfor idx,t in ipairs( tables ) do\
+\t\tif filename and filename ~= true and filename ~= 1 then\
+\t\t\tfile:write( "-- Table: {"..idx.."}"..charE )\
+\t\tend\
+\t\tfile:write( "{"..charE )\
+\t\tlocal thandled = {}\
+\t\tfor i,v in ipairs( t ) do\
+\t\t\tthandled[i] = true\
+\t\t\t-- escape functions and userdata\
+\t\t\tif type( v ) ~= "userdata" then\
+\t\t\t\t-- only handle value\
+\t\t\t\tif type( v ) == "table" then\
+\t\t\t\t\tif not lookup[v] then\
+\t\t\t\t\t\ttable.insert( tables, v )\
+\t\t\t\t\t\tlookup[v] = #tables\
+\t\t\t\t\tend\
+\t\t\t\t\tfile:write( charS.."{"..lookup[v].."},"..charE )\
+\t\t\t\telseif type( v ) == "function" then\
+\t\t\t\t\tfile:write( charS.."loadstring("..exportstring(string.dump( v )).."),"..charE )\
+\t\t\t\telse\
+\t\t\t\t\tlocal value =  ( type( v ) == "string" and exportstring( v ) ) or tostring( v )\
+\t\t\t\t\tfile:write(  charS..value..","..charE )\
+\t\t\t\tend\
+\t\t\tend\
+\t\tend\
+\t\tfor i,v in pairs( t ) do\
+\t\t\t-- escape functions and userdata\
+\t\t\tif (not thandled[i]) and type( v ) ~= "userdata" then\
+\t\t\t\t-- handle index\
+\t\t\t\tif type( i ) == "table" then\
+\t\t\t\t\tif not lookup[i] then\
+\t\t\t\t\t\ttable.insert( tables,i )\
+\t\t\t\t\t\tlookup[i] = #tables\
+\t\t\t\t\tend\
+\t\t\t\t\tfile:write( charS.."[{"..lookup[i].."}]=" )\
+\t\t\t\telse\
+\t\t\t\t\tlocal index = ( type( i ) == "string" and "["..exportstring( i ).."]" ) or string.format( "[%d]",i )\
+\t\t\t\t\tfile:write( charS..index.."=" )\
+\t\t\t\tend\
+\t\t\t\t-- handle value\
+\t\t\t\tif type( v ) == "table" then\
+\t\t\t\t\tif not lookup[v] then\
+\t\t\t\t\t\ttable.insert( tables,v )\
+\t\t\t\t\t\tlookup[v] = #tables\
+\t\t\t\t\tend\
+\t\t\t\t\tfile:write( "{"..lookup[v].."},"..charE )\
+\t\t\t\telseif type( v ) == "function" then\
+\t\t\t\t\tfile:write( "loadstring("..exportstring(string.dump( v )).."),"..charE )\
+\t\t\t\telse\
+\t\t\t\t\tlocal value =  ( type( v ) == "string" and exportstring( v ) ) or tostring( v )\
+\t\t\t\t\tfile:write( value..","..charE )\
+\t\t\t\tend\
+\t\t\tend\
+\t\tend\
+\t\tfile:write( "},"..charE )\
+\tend\
+\tfile:write( "}" )\
+\t-- Return Values\
+\t-- return stringtable from string\
+\tif not filename then\
+\t\t-- set marker for stringtable\
+\t\treturn file.str.."--|"\
+\t-- return stringttable from file\
+\telseif filename == true or filename == 1 then\
+\t\tfile:seek ( "set" )\
+\t\t-- no need to close file, it gets closed and removed automatically\
+\t\t-- set marker for stringtable\
+\t\treturn file:read( "*a" ).."--|"\
+\t-- close file and return 1\
+\telse\
+\t\tfile:close()\
+\t\treturn 1\
+\tend\
+end\
+\
+--// The Load Function\
+function table.load( sfile )\
+\tlocal tables, err, _\
+\t-- catch marker for stringtable\
+\tif string.sub( sfile,-3,-1 ) == "--|" then\
+\t\ttables,err = loadstring( sfile )\
+\telse\
+\t\ttables,err = loadfile( sfile )\
+\tend\
+\tif err then return _,err\
+\tend\
+\ttables = tables()\
+\tfor idx = 1,#tables do\
+\t\tlocal tolinkv,tolinki = {},{}\
+\t\tfor i,v in pairs( tables[idx] ) do\
+\t\t\tif type( v ) == "table" and tables[v[1]] then\
+\t\t\t\ttable.insert( tolinkv,{ i,tables[v[1]] } )\
+\t\t\tend\
+\t\t\tif type( i ) == "table" and tables[i[1]] then\
+\t\t\t\ttable.insert( tolinki,{ i,tables[i[1]] } )\
+\t\t\tend\
+\t\tend\
+\t\t-- link values, first due to possible changes of indices\
+\t\tfor _,v in ipairs( tolinkv ) do\
+\t\t\ttables[idx][v[1]] = v[2]\
+\t\tend\
+\t\t-- link indices\
+\t\tfor _,v in ipairs( tolinki ) do\
+\t\t\ttables[idx][v[2]],tables[idx][v[1]] =  tables[idx][v[1]],nil\
+\t\tend\
+\tend\
+\treturn tables[1]\
+end\
+-- close do\
+end',"@./.\\save_table.lua"))package.preload['save_system']=assert(loadstring('\
+\
+require "save_table"\
+local c = require "cifrado_ukey"\
+\
+\
+local s = {}\
+\
+local function getString( t , key , len )\
+   \
+   local table_str = table.save( t ) \
+\
+   if key then \
+      return c.encriptar( table_str , key , len )\
+   end \
+   \
+   return table_str\
+end  \
+        \
+function s.save( t , path , key , len )          \
+   \
+   local string = getString( t , key , len )\
+\
+   local file = io.open( path , "w+b" )  \
+\
+         if file then   \
+            file:write( string ) \
+            file:close()\
+         else print( "File: "..path.." Can\'t be opened or don\'t exist" ) \
+         end  \
+    \
+end \
+\
+function s.load( path , key , len )\
+\
+   local file = io.open( path , "rb" )      \
+   \
+   if file then \
+\
+       local str = file:read( "*all" )\
+                   file:close()\
+\
+       if key then \
+           local decrypt = c.decriptar( str , key , len )\
+\
+           return table.load( decrypt ) \
+       else \
+          return table.load( str )\
+       end  \
+\
+   else print( "File: "..path.." Can\'t be opened or don\'t exist" )  \
+      \
+   end  \
+\
+end \
+        \
+return s',"@./.\\save_system.lua"))package.preload['save_system2']=assert(loadstring('\
+\
+require "save_table"\
+local c = require "cifrado_hash"\
+\
+\
+local s = {}\
+\
+local function getString( t , key )\
+   \
+   local table_str = table.save( t ) \
+\
+   if key then \
+      return c.encrypt( key , table_str )\
+   end \
+   \
+   return table_str\
+end  \
+        \
+function s.save( t , path , key )          \
+   \
+   local string = getString( t , key )\
+\
+   local file = io.open( path , "w+b" )  \
+\
+         if file then   \
+            file:write( string ) \
+            file:close()\
+         else print( "File: "..path.." Can\'t be opened or don\'t exist" ) \
+         end  \
+    \
+end \
+\
+function s.load( path , key )\
+\
+   local file = io.open( path , "rb" )      \
+   \
+   if file then \
+\
+       local str = file:read( "*all" )\
+                   file:close()\
+\
+       if key then \
+           local decrypt = c.decrypt( key , str )\
+\
+           return table.load( decrypt ) \
+       else \
+          return table.load( str )\
+       end  \
+\
+   else print( "File: "..path.." Can\'t be opened or don\'t exist" )  \
+      \
+   end  \
+\
+end \
+        \
+return s',"@./.\\save_system2.lua"))package.preload['spr_events_lib']=assert(loadstring('\
+\
+\
+local spr_e = {}\
+      spr_e.__index = spr_e\
+\
+local e_type = {}\
+      e_type.touch = "mouse_touch"\
+      e_type.mouseStatus = "mouse_status"\
+      e_type.mouseScreen = "mouse_screen"\
+      e_type.keyPressed = "key_pressed"\
+      e_type.keyReleased = "key_released"\
+      e_type.keyIsPressed = "key_isPressed"\
+      e_type.enterFrame = "enterFrame"\
+\
+\
+local e_type2 = {}\
+      e_type2.touch = "touch"\
+      e_type2.mouseStatus = "mouse_status"\
+      e_type2.mouseScreen = "mouse_screen"\
+      e_type2.keyPressed = "keyPressed"\
+      e_type2.keyReleased = "keyReleased"\
+      e_type2.keyIsPressed = "keyIsPressed"\
+      e_type2.enterFrame = "enterFrame"\
+\
+\t function spr_e:addEvent( name , func )\
+\t    \
+\t      expectedVal( name , "string" , "_SPRITES error:" , true )\
+\t      expectedVal( func , "function" , "_SPRITES error:" , true ) \
+\
+\t\t      if name == "onDestroyBefore" then \
+\
+\t\t      \t  self.onDestroy[1] = func \
+\
+\t\t      elseif name == "onDestroyAfter" then \
+\
+\t\t      \t  self.onDestroy[2] = func \
+\
+\t\t      elseif name == "onSleep" then \
+\
+\t\t      \t  self.sleep_event = func \
+\
+\t\t      elseif name == "physics" then \
+                  \
+                  self.physics_destroy = func \
+\
+\t\t      else \
+\
+      \t\t\t\tlocal function set()\
+\
+\t\t\t\t\t\tlocal e = self[ e_type[ name ] ] \
+\t\t\t\t\t    e[ #e + 1 ] = func ;\
+\
+\t\t\t\t\t    if #e == 1 then \
+                            local g_e = _EVENTS[ e_type2[ name ] ] \
+                            g_e[ #g_e + 1 ] = self ;\
+\t\t\t\t\t    end \
+\t\t\t\t \
+\t\t\t\t    end ; local err = pcall( set ) ; if not err then print( "_SPRITE error: "..name.." is not a valid event type" ) end ;\
+\
+\t\t      end \
+\
+\t end\
+\
+\t function spr_e:removeEvent( name , func )\
+\t    \
+\t      expectedVal( name , "string" , "_SPRITES error:" , true )\
+\t      expectedVal( func , "function" , "_SPRITES error:" , true )\
+\t      \
+\t\t\tlocal function set()\
+\
+\t\t\t\tlocal e = self[ e_type[ name ] ]  \
+\
+\t\t\t    removeTable( e , func ) \
+\
+\t\t\t    if #e == 0 then removeTable( _EVENTS[ e_type2[ name ] ] , self ) end \
+\t\t \
+\t\t    end ; local err = pcall( set ) ; if not err then print( "_SPRITE error: "..name.." is not a valid event type" ) end ; \
+\
+\t end\
+\
+function spr_e:getTouch()\
+\
+\t if self.window.focus and ( not self.sleep ) and ( self.window.t_focus == nil or self.window.t_focus == self ) and ( not self.isDestroy ) then \
+\t    \
+\t    local topX , topY , endX , endY = self:getDimensions() \
+        \
+        local v_x , v_y = 0 , 0\
+\
+        if self.group then \
+           if self.group.view then  \
+\t    \t\t v_x , v_y = self.group.view.x , self.group.view.y \
+\t    \tend \t\
+\t    end\
+        \
+\t    local m_posx , m_posy = _MOUSE.x + v_x , _MOUSE.y + v_y ;\
+\
+\t    if ( topX <= m_posx and m_posx <= endX ) and ( topY <= m_posy and m_posy <= endY ) then \
+\t          \
+\t          for i = 1 , #self.mouse_touch do\
+                   \
+\t                \tself.mouse_touch[i]( self ) \
+\
+\t          end \
+\
+\t    end \
+\
+\t end \
+\
+end \t\
+\
+function spr_e:getMouseStatus()\
+\
+\t if self.window.focus and ( not self.sleep ) and ( self.window.t_focus == nil or self.window.t_focus == self ) and ( not self.isDestroy ) then  \
+\t          \
+\t          for i = 1 , #self.mouse_status do \
+\t                \
+\t                self.mouse_status[i]( self )\
+\
+\t          end \
+\
+\t end \
+\
+end \
+\
+\
+function spr_e:getMouseScreen()\
+\
+\t if self.window.focus and ( not self.sleep ) and ( self.window.t_focus == nil or self.window.t_focus == self ) and ( not self.isDestroy ) then  \
+\t          \
+\t          for i = 1 , #self.mouse_screen do \
+\t                \
+\t                self.mouse_screen[i]( self )\
+\
+\t          end \
+\
+\t end \
+\
+end \
+\
+\
+\
+function spr_e:getKeyPressed()\
+\
+\t if self.window.focus and ( not self.sleep ) and ( self.window.t_focus == nil or self.window.t_focus == self ) and ( not self.isDestroy ) then \
+\t    \
+\t          for i = 1 , #self.key_pressed do \
+\t                \
+\t                self.key_pressed[i]( self )\
+\
+\t          end \
+\
+\t end \
+\
+end \t\
+\
+function spr_e:getKeyReleased()\
+\
+\t if self.window.focus and ( not self.sleep ) and ( self.window.t_focus == nil or self.window.t_focus == self ) and ( not self.isDestroy ) then  \
+\t          \
+\t          for i = 1 , #self.key_released do \
+\t                \
+\t                self.key_released[i]( self )\
+\
+\t          end \
+\
+\t end \
+\
+end \
+\
+\
+function spr_e:getKeyIsPressed()\
+\
+\t if self.window.focus and ( not self.sleep ) and ( self.window.t_focus == nil or self.window.t_focus == self ) and ( not self.isDestroy ) then  \
+\t          \
+\t          for i = 1 , #self.key_isPressed do \
+\t                \
+\t                self.key_isPressed[i]( self )\
+\
+\t          end \
+\
+\t end \
+\
+end \
+\
+\
+function spr_e:getEnterFrame()\
+\
+      for i = 1 , #self.enterFrame do \
+            \
+            self.enterFrame[i]( self )\
+\
+      end \
+\
+end \
+\
+return spr_e \
+\
+\
+',"@./.\\spr_events_lib.lua"))package.preload['physics_aux']=assert(loadstring('\
+\
+\
+\
+\
+\
+local p_aux = {}\
+      p_aux.__index = p_aux\
+\
+function p_aux:setPos( obj , posX , posY , rotation )\
+\
+  expectedVal( obj._physics , "table" , "Physcis error: invalid p_aux object" ) \
+\
+  rotation = rotation or obj:getRotation()\
+  \
+  if not self:isLocked( obj ) then  \
+     physics_setPos( obj._physics.userdata , posX , posY , rotation ) \
+  else \
+     warning( "Attemp to change body position when world is locked ; petition denied" )\
+  end \
+    \
+end\
+\
+function p_aux:updateObj()\
+\
+  expectedVal( obj._physics , "table" , "Physcis error: invalid p_aux object" ) \
+\
+  local rotation = rotation or obj:getRotation()\
+  local posX , posY = obj:getPos()\
+  \
+  if not self:isLocked( obj ) then  \
+     physics_setPos( obj._physics.userdata , posX , posY , rotation ) \
+  else \
+     warning( "Attemp to update body position when world is locked ; petition denied" )\
+  end \
+end\
+\
+function p_aux:move( obj , posX , posY )\
+\
+   expectedVal( obj._physics , "table" , "Physcis error: invalid p_aux object" )    \
+\
+   local x , y = obj:getPos()\
+   local r = obj:getRotation()\
+\
+   self:setPos( obj , x + posX , y + posY , r )\
+\
+end\
+\
+function p_aux:moveX( obj , x ) self:move( obj , x , 0 ) end ; function p_aux:moveY( obj , y ) self:move( obj , 0 , y ) end \
+\
+function p_aux:rotate( obj , rot )\
+\
+   expectedVal( obj._physics , "table" , "Physcis error: invalid p_aux object" )    \
+   \
+   local x , y = obj:getPos()\
+   local r = obj:getRotation() + rot \
+\
+   self:setPos( obj , x , y , r )\
+\
+end\
+\
+function p_aux:setRotation( obj , rot )\
+\
+   expectedVal( obj._physics , "table" , "Physcis error: invalid p_aux object" )    \
+\
+   local x , y = obj:getPos()\
+\
+   self:setPos( obj , x , y , rot )\
+\
+end\
+\
+\
+function p_aux:resetToStart( obj )\
+\
+   expectedVal( obj._physics , "table" , "Physcis error: invalid p_aux object" )    \
+\
+   local x , y = obj:getOrigin()\
+\
+   self:setPos( obj , x , y )\
+\
+end\
+\
+function p_aux:setActive( obj , _bool )\
+\
+  expectedVal( obj._physics , "table" , "Physcis error: invalid physics object" )\
+\
+  if _bool == nil then \
+       obj._physics.active = not obj._physics.active\
+  else \
+      obj._physics.active = _bool\
+  end \
+\
+  physics_setActive( obj._physics.userdata , obj._physics.active )  \
+  \
+end\
+\
+function p_aux:isActive( obj )\
+   expectedVal( obj._physics , "table" , "Physcis error: invalid physics object" )\
+   return physics_isActive( obj._physics ) \
+end\
+\
+function p_aux:setSensor( obj , bool )  \
+   expectedVal( obj._physics , "table" , "Physcis error: invalid p_aux object" ) \
+   physics_setSensor( obj._physics.userdata , bool )  \
+end\
+\
+function p_aux:isSensor( obj )  \
+   expectedVal( obj._physics , "table" , "Physcis error: invalid p_aux object" ) \
+   return physics_isSensor( obj._physics.userdata )  \
+end\
+\
+function p_aux:setBullet( obj , bool )\
+   expectedVal( obj._physics , "table" , "Physcis error: invalid p_aux object" ) \
+   physics_setBullet( obj._physics.userdata , bool )  \
+end\
+\
+function p_aux:isBullet( obj )\
+   expectedVal( obj._physics , "table" , "Physcis error: invalid p_aux object" ) \
+   return physics_isBullet( obj._physics.userdata )  \
+end\
+\
+function p_aux:setAwake( obj , bool )\
+   expectedVal( obj._physics , "table" , "Physcis error: invalid p_aux object" ) \
+   physics_setAwake( obj._physics.userdata , bool )  \
+end\
+\
+function p_aux:isAwake( obj )\
+   expectedVal( obj._physics , "table" , "Physcis error: invalid p_aux object" ) \
+   return physics_isAwake( obj._physics.userdata )  \
+end\
+\
+function p_aux:setGravityScale( obj , num )  \
+   expectedVal( obj._physics , "table" , "Physcis error: invalid p_aux object" ) ; expectedVal( num , "number" , "Physcis error: invalid p_aux object" ) \
+   physics_setGravityScale( obj._physics.userdata , num )\
+end\
+\
+function p_aux:getGravityScale( obj )  \
+   expectedVal( obj._physics , "table" , "Physcis error: invalid p_aux object" )  \
+   return physics_getGravityScale( obj._physics.userdata , num )\
+end\
+\
+\
+return p_aux\
+',"@./.\\physics_aux.lua"))package.preload['wise_render_lib']=assert(loadstring("\
+\
+\
+\
+\
+\
+\
+\
+local wiseRender = {}\
+      wiseRender.on = false\
+      wiseRender.range = 0\
+\
+function wiseRender:getTouch( x , y )\
+    \
+   self.x , self.y = x , y \
+   \
+   self:getPos()\
+\
+end\
+\
+function wiseRender:getPos()\
+\
+   for s = 1 , #_SPRITES do \
+\
+       local spr = _SPRITES[ s ]\
+\
+       local result = false \
+\
+       for v = 1 , #_VIEW.views do \
+           \
+            spr.window:setView( _VIEW.views[ v ] )\
+\
+            local wiseX , wiseY = wiseTouch( spr.window.window , self.x , self.y )\
+\
+            result = spr:getTouch( wiseX , wiseY ) \
+\
+            if result then break end \
+       \
+       end \
+\
+       if not result then spr:getTouch() end \
+\
+   end \
+\
+end \
+\
+\
+_WISE = wiseRender\
+","@./.\\wise_render_lib.lua"))package.preload['animation_lib']=assert(loadstring('\
+\
+local spr_events = require "spr_events_lib"\
+\
+local animation = {}\
+\t    animation.__index = animation \
+      animation.__mode = "k"\
+\
+      setmetatable( animation , spr_events )\
+\
+function animation:animate( a )\
+\
+   local topX , topY , endX , endY = unpack( a.ani[ a.frame ] ) \t\
+\
+   self:setMask( topX , topY , endX , endY )\
+\
+   a.frame = a.frame + 1 \
+\
+   if a.frame > a.frames_n then \
+   \t  a.frame = 1 \
+   \t  a.loop = a.loop - 1\
+   end \
+\
+   if ( a.loop > 0 and a.frame == 1 ) or ( a.loop < 0 and a.frame == 1 )  then\
+      \
+      if type( a.onComplete ) == "function" then a.onComplete( { target = self , loop = a.loop , status = a.status , name = a.name } ) end  \
+   \t  a.temp = _TIMERS:new( a.delay , function() self:animate( a ) end , a.frames_n ) \
+\
+   elseif a.frame == 1 then \
+      \
+      a.status = "stop"\
+      if type( a.onComplete ) == "function" then a.onComplete( { target = self , loop = a.loop , status = a.status , name = a.name } ) end   \
+\
+   end \
+\
+end\
+\
+function animation:cancel()\
+\
+    local a = self._animation\
+\
+    if a.status == "play" or a.status == "pause" then \
+      \
+      a.status = "stop"\
+      if type( a.onCancel ) == "function" then a.onCancel( { target = self , loop = a.loop , status = a.status , name = a.name } ) end \
+      a.temp:stop()\
+\
+    end    \
+\
+end \
+\
+function animation:pause()\
+\
+    local a = self._animation\
+\
+    if a.status == "play" then \
+      \
+      a.status = "pause"\
+      if type( a.onPause ) == "function" then a.onPause( { target = self , loop = a.loop , status = a.status , name = a.name } ) end \
+      a.temp:pause()\
+\
+    end    \
+\
+end \
+\
+function animation:resume()\
+\
+    local a = self._animation\
+\
+    if a.status == "pause" then \
+      \
+      a.status = "play"\
+      if type( a.onResume ) == "function" then a.onResume( { target = self , loop = a.loop , status = a.status , name = a.name } ) end \
+      a.temp:resume()\
+\
+    end    \
+\
+end \
+\
+function animation:play( val , cancel_callback )\
+    \
+    if type( val ) == "string" then \
+       for i = 1 , #self.animation do \
+           if self.animation[i].name == val then \
+                self._animation.actual_ani = val\
+                val = i  \
+                break \
+           end \
+       end \
+    end \
+\
+    if ( tonumber( val ) or 0 ) > 0 then \
+        \
+        local a = self._animation\
+        local s = self.animation[ val ]\
+        \
+        if a.status == "play" or a.status == "pause" then \
+          if cancel_callback then\
+        \t   self:cancel() \
+          else \
+             a.temp:stop()\
+          end\
+        end  \
+\
+        a.frame = 1\
+        a.name = s.name\
+        a.frames_n = #s\
+        a.ani = s \
+        a.val = val  \
+        a.loop = s.loop \
+        a.status = "play"\
+        a.delay = s.delay \
+        a.start_delay = s.start_delay\
+        a.onComplete = s.onComplete\
+        a.onCancel = s.onCancel \
+        a.onPause = s.onPause \
+        a.onResume =  s.onResume\
+        a.onStart = s.onStart \
+\
+        local onStartSwicth = true\
+\
+        local function _start_ani_() \
+          \
+          self:animate( a ) \
+\
+          if type( a.onStart ) == "function" and onStartSwicth then \
+               a.onStart( { target = self , loop = a.loop , status = a.status , name = a.name } )\
+               onStartSwicth = false \
+          end \
+\
+        end\
+\
+        a.temp = _TIMERS:new( a.start_delay , _start_ani_ , a.frames_n )\
+\
+    else \
+\
+      warning( "Animation number/name: "..val.." not found" )\
+\
+    end \
+\
+end \
+\
+function animation:setAnimation( _t , start )\
+\t\
+\texpectedVal( _t , "table" , "_SPRITES error:" , true )\
+\texpectedVal( _t.name , "string" , "SPRITE error: table property \\"name\\" is not a String type" ) \
+\texpectedVal( _t.delay , "number" , "SPRITE error: table property \\"delay\\" is not a number/number-string type" )\
+\
+\t_t.loop = _t.loops or 1 ; \
+\t_t.start_delay = _t.start_delay or 0.1\
+\
+    self.animation[ #self.animation + 1 ] = _t \
+\
+    if start then \
+      \
+       self:play( #self.animation )\
+  \
+    end \
+\
+end\
+\
+function animation:getLastAnimation()\
+\
+  return self._animation.actual_ani\
+\
+end\
+\
+function animation:getLastStatus()\
+    \
+    return self._animation.status\
+end\
+\
+\
+\
+\
+return animation ;',"@./.\\animation_lib.lua"))package.preload['fps_lib']=assert(loadstring("\
+local _ceil = math.ceil \
+\
+local fps = {}\
+\t    fps.val = sys.fps  \
+\t    fps.promedy = sys.fps \
+\t    fps.fps = sys.fps \
+\t    fps._promedy = {}\
+\
+\t  fps.__call = function( self , fps )\
+\
+           self.fps = fps \
+\
+           local p = self._promedy\
+           local p_len = #p \
+\
+           p[ p_len + 1 ] = fps \
+\
+           if p_len == sys.fps_promedy then\
+                 \
+                 local sum , total = 0 , 0 ;    \
+\
+                 for i = 1 , p_len do \
+                      \
+                      sum = sum + p[ i ]\
+                      p[ i ] = nil      \
+                      total = total + 1 ;\
+\
+                 end \
+\
+                 self.promedy = _ceil( sum / total )\
+\
+           end  \
+\
+\t  end  \
+\
+\t  setmetatable( fps , fps )\
+\
+function fps:setVal( val ) self.val = val end\
+\
+function fps:getPromedy() return self.promedy end \
+\
+function fps:val_convert( num ) \
+\
+   local num = num * self.val / _FPS \
+   \
+   return num\
+end \
+\
+\
+_FPS = fps \
+\
+\
+\
+\
+\
+","@./.\\fps_lib.lua"))package.preload['events_lib']=assert(loadstring('\
+-- _EVENTS and _MOUSE table both globals.\
+\
+_EVENTS = { touch = {} , mouse_status = {} , mouse_screen = {} , enterFrame = {} , keyPressed = {} , keyReleased = {} , keyIsPressed = {} } \
+\
+_MOUSE = { x = 0 , y = 0 , button = false , status = false , mouse_screen = false } \
+\
+function _MOUSE:getButton()\
+  \
+  if self.button == 1 then \
+\
+     return "left"\
+  \
+  elseif self.button == 2 then \
+\
+    return "right"\
+  \
+  else return "none" \
+\
+  end   \
+\
+end \
+\
+function _MOUSE:getStatus()\
+  \
+  if self.status == 1 then \
+\
+     return "pressed"\
+  \
+  elseif self.status == 2 then \
+\
+    return "released"\
+  \
+  elseif self.status == 3 then \
+\
+    return "moved" \
+\
+  end   \
+\
+end \
+\
+function _MOUSE:getMouseScreen()\
+  \
+   return self.mouse_screen\
+end \
+\
+\
+function _EVENTS.onTouch( x , y , b , wiseX , wiseY )\
+     \
+     _MOUSE.x , _MOUSE.y , _MOUSE.button = x , y , b ;\
+\
+     local win , view = _EVENTS.usingWindow , _EVENTS.usingView\
+\
+     if win and view then -- touch position according the view setted by the programmer.\
+         \
+          local x , y = wiseTouch( win.window , view.view , wiseX , wiseY )\
+\
+          _MOUSE.x , _MOUSE.y = x , y \
+\
+     end  \
+\
+     Runtime:getEvent( "touch" ) \
+\
+     local e = _EVENTS.touch  \
+\
+     for i = 1 , #e do \
+        \
+        local sp = e[i]\
+        sp:getTouch()\
+\
+     end \
+\
+end \
+\
+\
+function _EVENTS.onMouseStatus( s )\
+\t \
+\t _MOUSE.status = s \
+\
+     Runtime:getEvent( "mouseStatus" ) \
+\
+     local e = _EVENTS.mouse_status\
+\
+     for i = 1 , #e do \
+        \
+        local sp = e[i]\
+        sp:getMouseStatus()\
+\
+     end \
+\
+end\
+\
+function _EVENTS.onMouseScreen( s )\
+\t\
+\t   _MOUSE.mouse_screen = s \
+\
+     Runtime:getEvent( "mouseScreen" ) \
+\
+     local e = _EVENTS.mouse_screen  \
+\
+     for i = 1 , #e do \
+        \
+        local sp = e[i]\
+        sp:getMouseScreen()\
+\
+     end \
+\
+end\
+\
+',"@./.\\events_lib.lua"))package.preload['runtime_lib']=assert(loadstring('\
+\
+\
+Runtime = { touch = {} , mouse_status = {} , mouse_screen = {} , keyPressed = {} , keyReleased = {} , keyIsPressed = {} , enterFrame = {} , textEntered = {} } \
+\
+local e_type = {}\
+\t  e_type.touch = Runtime.touch \
+\t  e_type.mouseStatus = Runtime.mouse_status\
+\t  e_type.mouseScreen = Runtime.mouse_screen\
+\t  e_type.keyPressed = Runtime.keyPressed\
+\t  e_type.keyReleased = Runtime.keyReleased\
+\t  e_type.keyIsPressed = Runtime.keyIsPressed\
+\t  e_type.enterFrame = Runtime.enterFrame \
+\t  e_type.textEntered = Runtime.textEntered\
+\
+\
+function Runtime:addEvent( name , func )\
+\
+\texpectedVal( name , "string" , "Runtime library error:" , true )\
+\texpectedVal( func , "function" , "Runtime library error:" , true )\
+\
+\tlocal function set()\
+\
+\t\tlocal e = e_type[ name ] \
+\
+\t    e[ #e + 1 ] = func ;\
+ \
+    end ; local err = pcall( set ) ; if not err then print( "Runtime library error: "..name.." is not a valid event type" ) end ; \
+\
+end\
+\
+function Runtime:removeEvent( name , func )\
+\t\
+\texpectedVal( name , "string" , "Runtime library error:" , true )\
+\texpectedVal( func , "function" , "Runtime library error:" , true )\
+\
+\tlocal function set()\
+\
+\t    local e = e_type[ name ] \
+\
+\t    removeTable( e , func ) \
+ \
+    end ; local err = pcall( set ) ; if not err then print( "Runtime library error: "..name.." is not a valid event type" ) end \
+\
+end\
+\
+\
+function Runtime:getEvent( name )\
+\
+   \t\tlocal e = e_type[ name ] \
+\
+\t    for i = 1 , #e do \
+\
+\t    \te[i]()\
+\
+\t    end \
+\
+end\
+\
+\
+\
+\
+',"@./.\\runtime_lib.lua"))package.preload['keyboard_lib']=assert(loadstring('\
+\
+local luaEnum = require "lua_enum"\
+\
+local key = {}\
+      key.keyval_t = {}\
+      key.keyname = {}\
+      key.keycode = "none" \
+      key.keyval = -1\
+      key.text = "none"\
+      key.status = 0 \
+      key.began = false \
+      key.lastText = ""\
+\
+\
+local file = io.open( "keybind.txt" , "r" )  \
+local str = file:read( "*a" )    \
+\
+local keybindraw = luaEnum( str )\
+\
+key.keyname = keybindraw[1]\
+\
+for i , v in pairs( keybindraw[1] ) do \
+\
+   key.keyval_t[ v ] = i \
+\
+end \
+\
+_KEYBOARD = key \
+\
+function key:getKey() return self.keycode end \
+\
+function key:getStatus() return self.status end\
+\
+function key:getTextEntered() return self.lastText end  \
+\
+function key:setKeyCode() self.keycode = self.keyval_t[ self.keyval ] end \
+\
+function _EVENTS.onKeyIsPressed() \
+\
+     Runtime:getEvent( "keyIsPressed" ) \
+\
+     local e = _EVENTS.keyIsPressed \
+\
+     for i = 1 , #e do \
+        \
+        local sp = e[i]\
+        sp:getKeyIsPressed()\
+\
+     end \
+\
+end \
+\
+function _EVENTS.onKeyPressed( keycode )\
+\
+    key.keyval = keycode \
+    key:setKeyCode()\
+\
+    if key.began == false then \
+\
+       key.began = true\
+       key.status = "Pressed"\
+\
+\t     Runtime:getEvent( "keyPressed" ) \
+\
+\t     local e = _EVENTS.keyPressed \
+\
+\t     for i = 1 , #e do \
+\t        \
+\t        local sp = e[i]\
+\t        sp:getKeyPressed()\
+\
+\t     end \
+\
+    else \
+\
+    \tkey.status = "isPressed" \
+    \t_EVENTS.onKeyIsPressed( keycode )   \t\
+       \
+    end \t\
+\
+end\
+\
+function _EVENTS.onKeyReleased( keycode )\
+\
+    key.keyval = keycode \
+    key:setKeyCode()\t\
+    \
+    key.began = false \
+    key.status = "Released"\
+\
+     Runtime:getEvent( "keyReleased" ) \
+\
+     local e = _EVENTS.keyReleased\
+\
+     for i = 1 , #e do \
+        \
+        local sp = e[i]\
+        sp:getKeyReleased()\
+\
+     end \
+\
+\
+end  \
+\
+function _EVENTS.onTextEntered( str )\
+    \
+    key.lastText = str    \
+    Runtime:getEvent( "textEntered" )      \
+       \
+end \
+\
+\
+function key:isThisPressed( name )\
+\
+    local val = self.keyname[ name ] or -1 \
+    return key_isKeyPressed( val )\
+end\
+\
+\
+',"@./.\\keyboard_lib.lua"))package.preload['sprite_lib']=assert(loadstring('\
+\
+_SPRITES = { __mode = "k" } \
+\
+local spr_event_list = { "mouse_touch" , "mouse_status" , "mouse_screen" , "key_pressed" , "key_released" , "key_isPressed" , "enterFrame" }\
+local spr_event_list2 = { "touch" , "mouse_status" , "mouse_screen" , "keyPressed" , "keyReleased" , "keyIsPressed" , "enterFrame" }\
+\
+local animation = require "animation_lib"\
+\
+local sprite_mt = {}\
+\t  \
+\t  sprite_mt.__index = function( obj , key )\
+\
+         -- if not obj._physics then \
+           return sprite_mt[ key ] \
+    end\
+\
+    setmetatable( sprite_mt , animation )\
+\
+    function sprite_mt:getGroup() return self.group end \
+\
+\t  function sprite_mt:draw() self.window:draw( self ) end \
+\
+\t  function sprite_mt:setImage( path , smooth , reset )\
+          \
+         expectedVal( path , "string" , "Display error:" , true )\
+\t          \
+\t     if smooth == nil then smooth = true end  \
+       if reset == nil then reset = true end   \
+\
+\t     spr_setImage( self.image , path , smooth , reset )\
+\
+\t  end\
+\
+\t  function sprite_mt:setTexture( t , reset ) spr_setTexture( self.image , t.texture , reset ) end \
+\
+\
+\t  function sprite_mt:setColor( r , g , b , a )\
+\t  \t \
+\t  \t r = r or 0 ; g = g or 0 ; b = b or 0 ; a = a or 100 ;\
+\t  \t spr_setColor( self.image , r , g , b , a )\
+\t  \t self.alpha = a \
+\
+\t  end\
+\
+    function sprite_mt:setColorOnly( r , g , b )\
+        \
+        r = r or 0 ; g = g or 0 ; b = b or 0 ; \
+        self:setColor( r , g , b , self.alpha )\
+       \
+    end\
+\
+\t  function sprite_mt:getColor() return spr_getColor( self.image ) end\
+\
+\t  function sprite_mt:setAlpha( a )\
+\
+\t  \t a = a or 100 ;\
+\t     r , g , b = self:getColor( self.image )\
+\t     self:setColor( r , g , b , a ) \
+\t     self.alpha = a \
+\
+\t  end\
+\
+    function sprite_mt:getAlpha() return self.alpha end  \
+\
+\
+\t  function sprite_mt:setAnchor( x , y ) x = x or 0 ; y = y or 0 ; spr_setAnchor( self.image , x , y  ) end \
+\
+\t  function sprite_mt:getAnchor() return spr_getAnchor( self.image ) end\
+\
+\t  function sprite_mt:setScale( xScale , yScale )  \
+         \
+         xScale = xScale or 1\
+         yScale = yScale or 1\
+\t       spr_setScale( self.image , xScale , yScale  )\
+\
+\t  end \
+\
+\t  function sprite_mt:getScale() return spr_getScale( self.image ) end\
+\
+\
+\
+\t  function sprite_mt:setRotation( angle ) spr_setRotation( self.image , angle ) end\
+\
+\t  function sprite_mt:rotate( angle ) spr_rotate( self.image , angle ) end\
+\t  \
+\t  function sprite_mt:getRotation() return spr_getRotation( self.image ) end\
+\
+\
+\
+\t  function sprite_mt:move( x , y ) x = x or 0 ; y = y or 0 ; spr_move( self.image , x , y ) end \
+\
+\t  function sprite_mt:moveX( x ) x = x or 0 ; spr_move( self.image , x , 0 ) end \
+\
+\t  function sprite_mt:moveY( y ) y = y or 0 ; spr_move( self.image , 0 , y ) end \
+\
+    function sprite_mt:setPos( x , y ) spr_setPos( self.image , x , y ) end ; function sprite_mt:setPosition( x , y ) spr_setPos( self.image , x , y ) end \
+\
+\t  function sprite_mt:getPos() return spr_getPosition( self.image ) end ; function sprite_mt:getPosition() return spr_getPosition( self.image ) end ;\
+\
+\t  function sprite_mt:setOrigin( x , y ) x = x or 0 ; y = y or 0 ; spr_setOrigin( self.image , x , y ) end\
+\
+\t  function sprite_mt:setOriginX( x ) x = x or 0 ; spr_setOrigin( self.image , x , getNumArgSelf( 2 , self , "getOrigin" ) ) end\
+\
+\t  function sprite_mt:setOriginY( y ) y = y or 0 ; spr_setOrigin( self.image , getNumArgSelf( 1 , self , "getOrigin" ) , y ) end\
+\
+\t  function sprite_mt:getOrigin() return spr_getOrigin( self.image ) end \
+\
+\t  function sprite_mt:resetToStart() self:setOrigin( self:getOrigin() ) end \
+\
+\t  function sprite_mt:getWalked() local X , Y = self:getPosition() ; local _X , _Y = self:getOrigin() ; return X - _X , Y - _Y end \
+\
+\t  function sprite_mt:setMask( x , y , width , height ) spr_setSpriteRect( self.image , x , y , width , height ) ; self:setAnchor( self:getAnchor() ) end  \
+\
+\t  function sprite_mt:getMask() return spr_getSpriteRect( self.image ) end  \
+\
+    function sprite_mt:getContent()\
+\
+          local x , y , w , h = self:getMask()\
+          local sX , sY = self:getScale()\
+\
+        return w * sX , h * sY ;   \
+    end\
+\
+\t  function sprite_mt:getDimensions() return spr_getDimensions( self.image ) end \
+      \
+     function sprite_mt:setFocus()   \
+\
+           self.window:autoFocus( self )\
+           self.isFocus = true \
+\
+     end  \
+\
+     function sprite_mt:sleepf( _bool , call )\
+\
+        if not self.isDestroy then \
+\
+           \tif _bool ~= nil then \
+           \t  \
+           \t  expectedVal( _bool , "boolean" , "_SPRITES error:" )\
+           \t  self.sleep = _bool \
+\
+           \telse self.sleep = not self.sleep\t\
+\
+           \tend\
+\
+            if call == nil then call = true end \
+\
+           \tif self.sleep and self.isFocus then self.window:autoFocus( nil ) end \
+\
+           \tif type( self.sleep_event ) == "function" and call then self.sleep_event( self ) end \
+\
+        end \
+\
+     end\
+\
+\
+function sprite_mt:remove()\
+    \
+    if self.isAlive then \
+       \
+       self.isAlive = false \
+\
+       if not self.group then removeTable( _DRAW , self ) else removeTable( self.group , self ) end \
+\
+    end \
+\
+end\
+\
+function sprite_mt:add()\
+\t\
+\tif not self.isAlive and not self.isDestroy then \
+\
+\t\tself.isAlive = true \
+\
+\t\tif not self.group then _DRAW:insert( self ) else self.group:insert( { self } ) end\
+\
+\tend \
+\
+end\
+\
+function sprite_mt:destroy()\
+     \
+     if not self.isDestroy then\
+\
+     \tlocal c1 , e1 , c2 , e2 ; \
+        \
+        if type( self.onDestroy[ 1 ] ) == "function" then c1 , e1 = pcall( function() self.onDestroy[1]( self ) end ) end \
+        \
+        self:sleepf( true , false )\
+        self.isDestroy = true \
+        self:remove()\
+        self:cancel()\
+        removeTable( _SPRITES , self )\
+       \tspr_delete( self.image ) \
+        self.image = nil \
+\
+        for i = 1 , #spr_event_list do \
+            if #self[ spr_event_list[i] ] > 0 then removeTable( _EVENTS[ spr_event_list2[ i ] ] , self ) end \
+        end   \
+\
+     \tif type( self.onDestroy[ 2 ] ) == "function" then c2 , e2 = pcall( function() self.onDestroy[2]( self ) end ) end \
+\
+     \tif c1 == false then print( "Event: on destroyBefore: "..e1 ) end \
+     \tif c2 == false then print( "Event: on destroyAfter: "..e2 ) end \
+\
+     else warning( "Attemp to delete a sprite that have been deleted ; petition denied" )\
+ \
+     end   \
+\
+end\
+\
+function display.new_sprite( path , posX , posY , smooth , window )\
+     \
+     posX = posX or 0 \
+     posY = posY or 0 \
+     \
+     if smooth == nil then smooth = false end \
+     \
+     local window = window or _WINDOWS.default ; \
+     if type( window ) == "number" then \
+     \t window = _WINDOWS[ window ] \
+     end \
+\
+     local sprite = { x = posY , y = posX , anchorX = 0 , anchorY = 0  , window = window } \
+           sprite.mouse_status = {} ; sprite.mouse_screen = {} ; sprite.mouse_touch = {} ; \
+           sprite.key_pressed = {} ; sprite.key_released = {} ; sprite.key_isPressed = {} ; sprite.enterFrame = {} ;\
+           sprite.animation = {} \
+           sprite._animation = { frame = 1 , name = "" , loop = 1 , val = 1 , status = "stop" , frames_n = 0 , ani = {} , temp = {} , delay = 0 , actual_ani = "none" }\
+           sprite.alpha = 100\
+           sprite.isAlive = true \
+           sprite.isDestroy = false \
+           sprite.sleep = false \
+           sprite.isFocus = false \
+           sprite.name = tostring( path )  \
+           sprite.onDestroy = {}\
+           sprite.sprite_mt = sprite_mt\
+           sprite._vision = { "box" }\
+\
+     \t     setmetatable( sprite  , sprite_mt )\
+\
+     sprite.image = new_sprite( path , posX , posY , smooth ) \
+\
+     _SPRITES[ #_SPRITES + 1 ] = sprite \
+     _DRAW:insert( sprite )\
+   \
+   return sprite \
+end \
+\
+\
+function display.new_spriteTexture( texture , posX , posY , window )\
+   \
+   local sprite = display.new_sprite( false , posX , posY , false , window )\
+\
+   sprite:setTexture( texture , true ) \
+\
+   return sprite \
+end \
+\
+\
+\
+',"@./.\\sprite_lib.lua"))package.preload['text_lib']=assert(loadstring('\
+local exist_font -- local \
+\
+local spr_events = require "spr_events_lib"\
+\
+_TEXTS = { default_font = "C:\\\\Windows\\\\Fonts\\\\arial.ttf" , __mode = "k" } \
+\
+\
+local spr_event_list = { "mouse_touch" , "mouse_status" , "mouse_screen" , "key_pressed" , "key_released" , "key_isPressed" , "enterFrame" }\
+local spr_event_list2 = { "touch" , "mouse_status" , "mouse_screen" , "keyPressed" , "keyReleased" , "keyIsPressed" , "enterFrame" }\
+\
+local animation = require "animation_lib"\
+\
+local text_mt = {}\
+\t  \
+\t  text_mt.__index = text_mt\
+\
+    setmetatable( text_mt , spr_events )\
+\
+    function text_mt:getGroup() return self.group end \
+\
+\t  function text_mt:draw() self.window:draw_text( self ) end \
+\
+\t  function text_mt:setColor( r , g , b , a )\
+\t  \t \
+\t  \t r = r or 0 ; g = g or 0 ; b = b or 0 ; a = a or 100 ;\
+\t  \t text_setColor( self.userdata , r , g , b , a )\
+\t  \t self.alpha = a \
+\
+\t  end\
+\
+    function text_mt:setColorOnly( r , g , b )\
+        \
+        r = r or 0 ; g = g or 0 ; b = b or 0 ; \
+        self:setColor( r , g , b , self.alpha )\
+       \
+    end\
+\
+\t  function text_mt:getColor() return text_getColor( self.userdata ) end\
+\
+\t  function text_mt:setAlpha( a )\
+\
+\t  \t a = a or 100 ;\
+\t     r , g , b = self:getColor( self.userdata )\
+\t     self:setColor( r , g , b , a ) \
+\t     self.alpha = a \
+\
+\t  end\
+\
+    function text_mt:getAlpha() return self.alpha end  \
+\
+\
+\t  function text_mt:setAnchor( x , y ) x = x or 0 ; y = y or 0 ; text_setAnchor( self.userdata , x , y  ) end \
+\
+\t  function text_mt:getAnchor() return text_getAnchor( self.userdata ) end\
+\
+\
+\
+\t  function text_mt:setScale( xScale , yScale )  \
+         \
+       xScale = xScale or 1\
+       yScale = yScale or 1\
+       text_setScale( self.userdata , xScale , yScale )\
+\
+\t  end \
+\
+\t  function text_mt:getScale() return text_getScale( self.userdata ) end\
+\
+\
+\
+\t  function text_mt:setRotation( angle ) text_setRotation( self.userdata , angle ) end\
+\
+\t  function text_mt:rotate( angle ) text_setRotation( self.userdata , self:getRotation() + angle ) end\
+\t  \
+\t  function text_mt:getRotation() return text_getRotation( self.userdata ) end\
+\
+\
+\
+\t  function text_mt:move( x , y ) x = x or 0 ; y = y or 0 ; text_move( self.userdata , x , y ) end \
+\
+\t  function text_mt:moveX( x ) x = x or 0 ; text_move( self.userdata , x , 0 ) end \
+\
+\t  function text_mt:moveY( y ) y = y or 0 ; text_move( self.userdata , 0 , y ) end \
+\
+\t  function text_mt:getPos() return text_getPos( self.userdata ) end ; function text_mt:getPosition() return text_getPos( self.userdata ) end ;\
+\
+\t  function text_mt:setOrigin( x , y ) x = x or 0 ; y = y or 0 ; text_setOrigin( self.userdata , x , y ) end\
+\
+\t  function text_mt:setOriginX( x ) x = x or 0 ; text_setOrigin( self.userdata , x , getNumArgSelf( 2 , self , "getOrigin" ) ) end\
+\
+\t  function text_mt:setOriginY( y ) y = y or 0 ; text_setOrigin( self.userdata , getNumArgSelf( 1 , self , "getOrigin" ) , y ) end\
+\
+\t  function text_mt:getOrigin() return text_getOrigin( self.userdata ) end \
+\
+\t  function text_mt:resetToStart() self:setOrigin( self:getOrigin() ) end \
+\
+\t  function text_mt:getWalked() local X , Y = self:getPosition() ; local _X , _Y = self:getOrigin() ; return X - _X , Y - _Y end \
+    \
+      function text_mt:getAABB() return text_getAABB( self.userdata ) end -- already scaled. \
+\
+      function text_mt:getContent() return self:getAABB() end\
+\
+\t  function text_mt:getDimensions() \
+         \
+         local posX , posY = self:getPos()\
+         local width , height = self:getAABB()\
+         local anchorX , anchorY = self:getAnchor()\
+\
+         local topX = posX - ( anchorX * width )\
+         local topY = posY - ( anchorY * height ) + 10\
+\
+         local endX = topX + width\
+         local endY = topY + height \
+        \
+        return topX , topY , endX , endY ;\
+    end \
+      \
+     function text_mt:setFocus()   \
+\
+           self.window:autoFocus( self )\
+           self.isFocus = true \
+\
+     end  \
+\
+     function text_mt:sleepf( _bool , call )\
+\
+        if not self.isDestroy then \
+\
+           \tif _bool ~= nil then \
+           \t  \
+           \t  expectedVal( _bool , "boolean" , "_TEXTS error:" )\
+           \t  self.sleep = _bool \
+\
+           \telse self.sleep = not self.sleep\t\
+\
+           \tend\
+\
+            if call == nil then call = true end \
+\
+           \tif self.sleep and self.isFocus then self.window:autoFocus( nil ) end \
+\
+           \tif type( self.sleep_event ) == "function" and call then self.sleep_event( self ) end \
+\
+        end \
+\
+     end\
+\
+\
+function text_mt:remove()\
+    \
+    if self.isAlive then \
+       \
+       self.isAlive = false \
+\
+       if not self.group then removeTable( _DRAW , self ) else removeTable( self.group , self ) end \
+\
+    end \
+\
+end\
+\
+function text_mt:add()\
+\t\
+\tif not self.isAlive and not self.isDestroy then \
+\
+\t\tself.isAlive = true \
+\
+\t\tif not self.group then _DRAW:insert( self ) else self.group:insert( { self } ) end\
+\
+\tend \
+\
+end\
+\
+function text_mt:destroy()\
+     \
+     if not self.isDestroy then\
+\
+     \tlocal c1 , e1 , c2 , e2 ; \
+        \
+        if type( self.onDestroy[ 1 ] ) == "function" then c1 , e1 = pcall( function() self.onDestroy[1]( self ) end ) end \
+        \
+        self:sleepf( true , false )\
+        self.isDestroy = true \
+        self:remove()\
+        removeTable( _TEXTS , self )\
+       \ttext_delete( self.userdata )\
+        self.userdata = nil  \
+\
+        for i = 1 , #spr_event_list do \
+            if #self[ spr_event_list[i] ] > 0 then removeTable( _EVENTS[ spr_event_list2[ i ] ] , self ) end \
+        end   \
+\
+     \tif type( self.onDestroy[ 2 ] ) == "function" then c2 , e2 = pcall( function() self.onDestroy[2]( self ) end ) end \
+\
+     \tif c1 == false then print( "Event: on destroyBefore: "..e1 ) end \
+     \tif c2 == false then print( "Event: on destroyAfter: "..e2 ) end \
+\
+     else warning( "Attemp to delete a text that have been deleted ; petition denied" )\
+ \
+     end   \
+\
+end\
+\
+function display.new_text( dats , posX , posY , window )\
+     \
+     posX = posX or 0 \
+     posY = posY or 0 \
+\
+     if type(dats) ~= "table" then\
+             dats = { string = "" , font = _TEXTS.default_font , size = 10 }\
+     else\
+         if type(dats.string) ~= "string" then dats.string = "" end \
+         if type(dats.font) ~= "string" then dats.font = _TEXTS.default_font end \
+         if type(dats.size) ~= "number" then dats.size = 10 elseif dats.size < 1 then dats.size = 10 end \
+     end  \
+\
+    local e , name = exist_font( dats.font , dats.append ) \
+    \
+     if not e then dats.font = "C:\\\\Windows\\\\Fonts\\\\arial.ttf" ; warning( "Can\'t set font: "..name.." because don\'t exist , using window font \'arial\'" ) end \
+\
+     local window = window or _WINDOWS.default ; \
+     if type( window ) == "number" then \
+     \t window = _WINDOWS[ window ] \
+     end \
+\
+     local text = { window = window } \
+           text.mouse_status = {} ; text.mouse_screen = {} ; text.mouse_touch = {} ; \
+           text.key_pressed = {} ; text.key_released = {} ; text.key_isPressed = {} ; text.enterFrame = {} ;\
+           text.onDestroy = {}\
+           text.alpha = 100\
+           text.isAlive = true \
+           text.isDestroy = false \
+           text.sleep = false \
+           text.isFocus = false \
+           text.string = dats.string\
+           text._vision = { "box" } \
+\
+     \t     setmetatable( text  , text_mt )\
+\
+           text.userdata = new_text( dats.string , posX , posY , dats.size , dats.font )\
+\
+     _TEXTS[ #_TEXTS + 1 ] = text \
+     _DRAW:insert( text )\
+   \
+   return text \
+end \
+\
+\
+function text_mt:setSize( size )   \
+   size = tonumber( size  ) \
+   expectedVal( size , "number" , "_TEXTS library error:" , true )\
+   text_setSize( self.userdata , size )\
+end\
+\
+function text_mt:getSize() return text_getSize( self.userdata ) end\
+\
+\
+function text_mt:setText( str ) \
+  expectedVal( str , "string" , "_TEXTS library error:" , true )\
+  text_setText( self.userdata , str )\
+end \
+\
+function text_mt:getText() return text_getText( self.userdata ) end \
+\
+function text_mt:setFont( font_name , append )\
+ \
+    local font_name , name = exist_font( font_name , append ) \
+    \
+    if font_name then \
+       text_setFont( self.userdata , font_name )\
+    else warning( "Can\'t set font: "..name.." because don\'t exist" ) \
+    end \
+\
+end  \
+\
+local function getStyles( str ) -- r - regular | b - bold | i - italic | u - underlined | s - strikethrough.    \
+\
+  local gsub = string.gsub\
+  \
+  local s = { "r" , "b" , "i" , "u" , "s" }\
+  local val = { 0 , 1 , 2 , 4 , 8 }\
+  local sty_num = 0 \
+\
+  for i = 1 , 5 do \
+      \
+     local _ , v = gsub( str , s[i] , "" )\
+     if v > 0 then \
+         sty_num = sty_num + val[i]\
+     end \
+\
+  end \
+   \
+   return sty_num \
+end\
+\
+function text_mt:setStyle( styles )\
+   \
+   expectedVal( styles , "table" , "_TEXTS library error:" , true )\
+\
+   local str = table.concat( styles )\
+\
+   local _style = getStyles( str )\
+   \
+   text_setStyle( self.userdata , _style )\
+end \
+\
+\
+function exist_font( font_name , append ) -- local function declared above. ( declarada arriba ). \
+\
+   if append == true then -- append can be true or string (path)\
+       font_name = "C:\\\\Windows\\\\Fonts\\\\"..font_name ; \
+   elseif append then font_name = append..font_name ;  \
+   end \
+\
+   local f = io.open( font_name , "r" ) \
+\
+   if f then \
+      f:close()\
+      return font_name ;\
+   else return false , font_name ; \
+   end \
+\
+end \
+',"@./.\\text_lib.lua"))package.preload['texture_lib']=assert(loadstring('\
+\
+local texture = {}\
+      texture.__index = texture \
+\
+function display.new_texture( file , smooth )\
+\t\
+\texpectedVal( file , "string" , "Display error (Texture) :" )\
+\
+\tif smooth == nil then smooth = false end \
+\
+\tlocal t = {}\
+\t      t.texture = new_texture( file , smooth )\
+\t      t.isAlive = true \
+\
+\tsetmetatable( t , texture )\
+   \
+   return t \
+end\
+\
+function texture:setImage( img_path ) texture_setImage( self.texture , img_path ) end  \
+\
+function texture:setSmooth( smooth ) if smooth == nil then smooth = false end texture_setSmooth( self.texture , smooth ) end\
+\
+function texture:destroy()\
+\
+    if self.isAlive then \
+\
+    \tself.isAlive = false \
+    \tdelete_texture( self.texture )\
+    \tself.texture = nil \
+    \t\
+    else warning( "Attemp to delete a texture that have been deleted ; petition denied" )\
+\
+    end \
+\
+end \
+\
+\
+\
+\
+',"@./.\\texture_lib.lua"))package.preload['window_lib']=assert(loadstring('\
+--[[\
+For some extrange reason if you draw text with sprite\'s draw function or visceversa..it work! ( window.draw( self.window , txt.userdata ) | window.draw_text( self.window , sp.image ) )\
+i think is for both class inherit from sf::drawable sf::transformable. \
+]]\
+\
+\
+local win_tmp = _WINDOWS\
+\
+_WINDOWS = {}\
+\
+local w = {} \
+      w.__index = w \
+  \t  w.focus = true \
+\
+      w.setFrameRate = function( self , num )\
+         expectedVal( num , "number" , "_WINDOWS error:" , true )\
+         window_setFrameRate( self.window , num )\
+      end \
+\
+\t  w.clear = function( self )\
+\t  \t window_clear( self.window )\
+\t  end\
+\t  \
+\t  w.display = function( self )\
+\t  \t window_display( self.window )\
+\t  end\
+\
+\t  w.draw = function( self , sp )\
+\t     window_draw( self.window , sp.image )\
+\t  end\
+\
+      w.draw_text = function( self , txt )\
+        window_draw_text( self.window , txt.userdata )\
+      end\
+\
+      w.draw_psys = function( self , psys )\
+        window_draw_psys( self.window , psys.userdata )\
+      end\
+\
+\t  w.construct = function( self , x  , y , name )\
+\t  \t window_construct( self.window , x , y , name )\
+\t  \t self.name = name \
+\t  end \
+\
+\t  w.init = function( self )\
+\t  \t window_init( self.window ) \
+\t  end\
+\
+\t  w.getSize = function( self )\
+\t  \t  return window_getSize( self.window )\
+\t  end\
+\
+    w.getCenter = function( self )\
+       local x , y = window_getSize( self.window ) \
+       return x * 0.5 , y * 0.5 ;\
+    end \
+\
+\t  w.setSize = function( self , xSize , ySize )\
+\t  \t  window_setSize( self.window , xSize , ySize )\
+    end \
+\
+    w.setTitle = function( self , str )\
+        window_setTitle( self.window , str )\
+        self.name = str \
+    end \
+\
+      w.onFocus = function( self , focus )\
+      \t  \
+      \t  for i = 1 , #self.focusListener do \
+              \
+              self.focusListener[i]( self , self.focus )\
+\
+      \t  end \
+\
+      end\
+\
+      w.autoFocus = function( self , obj )\
+\
+            if self.t_focus then \
+               self.t_focus.isFocus = false \
+            end \
+\
+            self.t_focus = obj \
+\
+      end \
+\
+      w.addEvent = function( self , name , func )\
+\
+         expectedVal( name , "string" , "_WINDOWS error:" , true )\
+         expectedVal( func , "function" , "_WINDOWS error:" , true )\
+      \t\
+      \t if name == "focus" then \
+            \
+             self.focusListener[ #self.focusListener + 1 ] = func \
+ \
+      \t end \
+\
+      end\
+\
+      w.removeEvent = function( self , name , func )\
+\
+         expectedVal( name , "string" , "_WINDOWS error:" , true )\
+         expectedVal( func , "function" , "_WINDOWS error:" , true )\
+               \t\
+      \t if name == "focus" then \
+             \
+             removeTable( self.focusListener , func )\
+ \
+      \t end \
+\
+      end\t \
+\
+      w.setDefaultView = function( self ) window_setDefaultView( self.window ) end  \
+\
+      w.setView = function( self , view ) window_setView( self.window , view.view ) end \t  \
+\
+for i = 1 , #win_tmp do \
+  \
+  _WINDOWS[i] = { window = win_tmp[i] , focusListener = {} , name = "noNameWindow" }  \
+  setmetatable( _WINDOWS[i] , w )\
+\
+end \
+\
+_WINDOWS.default = _WINDOWS[1]  \
+\
+function _WINDOWS.focus( win_num , focus )\
+\
+  _WINDOWS[ win_num ].focus = focus \
+  _WINDOWS[ win_num ]:onFocus()\
+\
+\
+end \
+',"@./.\\window_lib.lua"))package.preload['timers_lib']=assert(loadstring('\
+\
+\
+\
+_TIMERS = { _timers = {} } \
+_TIMERS.actual = 0 \
+_TIMERS.__index = _TIMERS\
+\
+function _TIMERS:new( delay , func , loops , op )\
+\
+    op = op or {}\
+    \
+    expectedVal( delay , "number" , "_TIMERS error:" , true )\
+    expectedVal( func , "function" , "_TIMERS error:" , true )\
+\
+    loops = loops or 1 ;\
+    \
+    local tiempo = { _time = self.actual + math.abs( delay ) , loops = loops , tag = op.tag  }\
+          tiempo.data = op.data -- cualquier cosa que el user desee.\
+          tiempo.remain = tiempo._time \
+          tiempo.extra_delay = op.extra_delay or 0 \
+          tiempo.delay = math.abs( delay ) \
+          tiempo.o_delay = tiempo.delay\
+          tiempo.o_loops = loops\
+          tiempo.status = "run" -- "pause" , "stop" \
+          tiempo.isRunning = true \
+\
+          setmetatable( tiempo , _TIMERS )\
+\
+    tiempo.call_back = func  \
+    \
+    self._timers[ #self._timers + 1 ] = tiempo \
+\
+   return tiempo \
+end\
+\
+function _TIMERS:pause( tag )\
+         \
+        if self == _TIMERS then \
+           \
+           for i = 1 , #self._timers do \
+                \
+                local t = self._timers[i] ; if t.tag == tag or tag == nil then t:pause() end \
+\
+           end \
+\
+        elseif self.status == "run" then  \
+           \
+            self.remain = self._time - _TIMERS.actual \
+            self.status = "pause"\
+            self.isRunning = false \
+           \
+           return self.remain , self.loops\
+        end \
+\
+end \
+\
+function _TIMERS:resume( tag )\
+         \
+        if self == _TIMERS then \
+           \
+           for i = 1 , #self._timers do \
+                \
+                local t = self._timers[i] ; if t.tag == tag or tag == nil then t:resume() end \
+\
+           end \
+\
+        elseif self.status == "pause" then  \
+           \
+            self._time = _TIMERS.actual + self.remain \
+            self.status = "run"\
+            self.isRunning = true \
+           \
+           return self.remain , self.loops\
+        end \
+\
+end\
+\
+function _TIMERS:stop( tag )\
+\
+        if self == _TIMERS then \
+           \
+           for i = 1 , #self._timers do \
+                \
+                local t = self._timers[i] ; if t.tag == tag or tag == nil then t:stop() end \
+\
+           end \
+\
+        elseif self.status ~= "stop" then \
+            \
+            self.status = "stop"\
+            self.isRunning = false \
+            self.remain = self._time - _TIMERS.actual\
+            removeTable( _TIMERS._timers , self )\
+           \
+           return self.remain , self.loops\
+        end \
+       \
+end  \
+\
+function _TIMERS:cancel( tag ) -- The same as "stop" method ;\
+\
+        if self == _TIMERS then \
+           \
+           for i = 1 , #self._timers do \
+                \
+                local t = self._timers[i] ; \
+\
+                if t.tag == tag or tag == nil then t:stop() end \
+\
+           end \
+\
+        elseif self.status ~= "stop" then \
+            \
+            self.status = "stop"\
+            self.isRunning = false \
+            self.remain = self._time - _TIMERS.actual\
+            removeTable( _TIMERS._timers , self ) \
+           \
+           return self.remain , self.loops\
+        end \
+       \
+end        \
+\
+function _TIMERS:check( val )\
+\
+    self.actual = val\
+\t\
+    local to_remove = {}\
+\
+\tfor i = 1 , #self._timers do \
+        \
+         if self._timers[i] then\
+             \
+             local temp = self._timers[i] ;\
+             local t = temp._time ; \
+\
+             if t <= self.actual and temp.isRunning then \
+               \
+                    temp.call_back( { temp , temp.loops } )\
+\
+                    if temp.loops < 0 then\
+                       \
+                       temp.delay = temp.delay + temp.extra_delay \
+                       temp._time = temp.delay + self.actual \
+\
+                    elseif temp.loops > 0 then\
+                        \
+                        temp.delay = temp.delay + temp.extra_delay \
+                        temp._time = temp.delay + self.actual \
+                        temp.loops = temp.loops - 1\
+\
+                        if temp.loops == 0 then \
+                        \
+                            temp.status = "stop" \
+                            self.isRunning = false \
+                            to_remove[ #to_remove + 1 ] = temp \
+\
+                        end\
+\
+                    end\
+\
+                    --print( temp.loops , temp.status )\
+             end \
+\
+          end \
+\
+\tend\
+\
+    for i = 1 , #to_remove do \
+        \
+        removeTable( self._timers , to_remove[i] )\
+\
+    end \
+\
+end\
+\
+function _TIMERS:getRemain()\
+   \
+   if self ~= _TIMERS then \
+\
+      if self.status ~= "stop" then \
+         return self._time - _TIMERS.actual \
+      else \
+         return -1 -- Timer expired.\
+      end \
+\
+   else  \
+      warning( "Method getRemain dosn\'t work the parent class ; petition denied" )\
+   end \
+\
+end\
+\
+function _TIMERS:getStatus()\
+\
+   if self ~= _TIMERS then \
+       return self.status \
+   else  \
+      warning( "Method getStatus dosn\'t work the parent class ; petition denied" )\
+   end \
+ end \
+\
+function _TIMERS:getInfo( id )\
+    \
+    if self == _TIMERS then \
+       \
+       separator( "_TIMERS" )\
+       for i = 1 , #self._timers do \
+              \
+              local temp = self._timers[i]\
+              \
+              temp:getInfo( i )\
+\
+       end \
+       separator( "_TIMERS" )\
+\
+    else \
+       \
+       local id = "id: "..tostring( id ) \
+       local tag = "Tag: "..tostring( self.tag )\
+       local o = "D: "..self.o_delay \
+       local ad = "AD: "..self.delay\
+       local ed = "ED: "..self.extra_delay\
+       local oloop = "OL: "..self.o_loops\
+       local loop = "AL: "..self.loops\
+       local st = "S: "..self.status \
+       local info = { id , tag , o , ad , ed , oloop , loop , st }\
+       print( table.concat( info , " " ) ) \
+\
+    end \
+\
+end\
+\
+function _TIMERS:giveInfo( timer )\
+\
+   if self == _TIMERS then \
+\
+     expectedVal( timer , "table" , "_TIMERS error:" , true )\
+     timer:giveInfo()\
+   \
+   else \
+     \
+     timer = self \
+     local loops = { max = timer.o_loops , actual = timer.loops }\
+     local delay = { original = timer.o_delay , actual = timer.delay , extra = timer.extra_delay }\
+     local info = { tag = timer.tag , status = timer.status , data = timer.data }\
+     return { loops = loops , delay = delay , info = info } ; \
+     \
+  end \
+\
+end \
+\
+\
+\
+\
+\
+',"@./.\\timers_lib.lua"))package.preload['groups_lib']=assert(loadstring('\
+local type , unpack = type , unpack ;\
+\
+_GROUPS = { groups = {} , type = "group_parent" }\
+_GROUPS.__index = _GROUPS\
+_GROUPS.__mode = "kv"\
+ \
+\
+local g = _GROUPS\
+\
+local function prove( name )\
+    local r = true \
+    for i = 1 , #g.groups do \
+      if g.groups[i].tag == name then  \
+         r = false \
+         break \
+      end \
+    end \
+    return r ;  \
+end\
+\
+local function draw_f( self ) \
+    \
+    if self.view then \
+       \
+       self.window:setView( self.view )\
+\
+    end \
+\
+    for i = 1 , #self do \
+        \
+        local sp = self[i]\
+\
+        sp:draw()\
+\
+    end \
+   \
+    self.window:setDefaultView() \
+\
+end\
+\
+local function setView_f( self , v ) self.view = v end\
+\
+function g:new( name , childs , window )\
+\
+\t expectedVal( name , "string" , "_GROUPS error:" , true )\t\
+     \
+     if not prove( name ) then warning( "Attemp to create a group with a tag: \\" "..name.."\\" ; but another alredy have it ; creation  denied" ) ; return false end \
+\
+\t local window = window or _WINDOWS.default ; \
+\t if type( window ) == "number" then \
+\t \t window = _WINDOWS[ window ] \
+\t end \
+\t \
+\t local g_obj = { tag = name , type = "group" , window = window , draw = draw_f } \
+           g_obj.setView = setView_f\
+\t  \
+\t self.groups[ #self.groups + 1 ] = g_obj \
+\t  \
+\t setmetatable( g_obj , _GROUPS ) \
+\
+\t if type( childs ) == "table" then g_obj:insert( childs ) end \
+\
+\t _DRAW:insert( g_obj )\
+   \
+   return g_obj\
+end\
+\
+function g:insert( name , tab )\
+\
+     if type( name ) == "string" then \
+\
+     \tfor i = 1 , #self.groups do \
+\
+     \t\tlocal _g = self.groups[ i ]\
+\
+     \t\tif _g.tag == name then \
+               \
+               _g:insert( tab )\
+               break \
+     \t\tend \
+\
+     \tend \
+\
+     elseif type( name ) == "table" then \
+\
+     \t  for i = 1 , #name do \
+             \
+             if name[i].group then \
+                 \
+                 name[i].group:removeChild( { name[i] } )\
+\
+             else removeTable( _DRAW , name[i] )\
+                  \
+             end \
+\
+             self[ #self + 1 ] = name[ i ]\
+             name[i].group = self \
+\
+     \t  end \
+\
+     end  \
+\
+end \
+\
+function g:removeChild( name , tab )\
+\t\
+     if type( name ) == "string" then \
+\
+     \tfor i = 1 , #self.groups do \
+\
+     \t\tlocal _g = self.groups[ i ]\
+\
+     \t\tif _g.tag == name then \
+               \
+               _g:removeChild( tab )\
+               break \
+     \t\tend \
+\
+     \tend \
+\
+     elseif type( name ) == "table" then \
+\
+     \t  for i = 1 , #name do \
+            \
+             removeTable( self , name[i] )\
+             name[i].group = nil \
+\
+     \t  end \
+\
+     end \t\
+\
+end\
+\
+function g:remove( name ) -- Remueve un grupo en especifico y a la vez sus elementos ( no destruye sus elementos )\
+\t\
+\tif type( name ) == "string" then \
+\
+     \tfor i = 1 , #self.groups do \
+\
+     \t\tlocal _g = self.groups[ i ]\
+\
+     \t\tif _g.tag == name then \
+               \
+               _g:empty() \
+               removeTable( _DRAW , _g )\
+               setmetatable(  _g , nil )\
+               table.remove( self.groups , i )\
+               break\
+     \t\tend \
+\
+     \tend \
+\
+     elseif self ~= g then \
+          \
+         g:remove( self.tag )\
+\
+     end \t\
+\
+end\
+\
+function g:removeAll() -- Remueve todos los grupos y a la vez todos los elementos de estos ( no destruye los elementos ).\
+\
+\tif self.type == "group_parent" then \
+\
+\t \tfor i = 1 , #self.groups do \
+\t        \
+            self.groups[ #self.groups ]:empty()\
+            removeTable( _DRAW , _g )\
+            setmetatable( self.groups[ #self.groups ] , nil )\
+            table.remove( self.groups , #self.groups )\
+\
+\t \tend \
+\
+\telse warning( "Try to call method \'removeAll\' on a group object ; petition denied" )\
+\
+    end \
+\
+end\
+\
+function g:empty() -- Remueve todos los elementos del grupo.\
+\t\
+\tif self.type == "group" then \
+\
+\t \tfor i = 1 , #self do \
+\t        \
+            self[#self].group = nil \
+            _DRAW:insert( self[#self] )   \
+\t        table.remove( self , #self )\
+\
+\t \tend \t\
+\
+\telse warning( "Try to empty a non-group objected ; petition denied" ) \t\
+\
+    end \
+\
+end\
+\
+function g:destroy( name ) -- Destruye un grupo y sus elementos.\
+    \
+    if type( name ) == "string" then \
+\
+        for i = 1 , #self.groups do \
+\
+            local _g = self.groups[ i ]\
+\
+            if _g.tag == name then -- usando los grupos.\
+\
+                 for k = 1 , #_g do \
+                    \
+                    _g[ #_g ]:destroy() -- destruye el elemento.\
+\
+                 end\
+                 removeTable( _DRAW , _g )\
+                 setmetatable( _g , nil )                \
+                 table.remove( self.groups , i )\
+\
+               break\
+            end \
+\
+        end \
+\
+     elseif self ~= g then \
+           \
+         g:destroy( self.tag )\
+\
+     end    \
+\
+end\
+\
+function g:destroyAll( name ) -- Destruye todos los grupos y sus elementos.\
+    \
+    if self.type == "group_parent" then \
+\
+        for i = 1 , #self.groups do \
+             \
+             local _g = #self.groups[ i ]\
+\
+             for k = 1 , #_g do \
+                 \
+                 _g[ #_g ]:destroy()\
+\
+             end         \
+             removeTable( _DRAW , _g )\
+             setmetatable( _g , nil )       \
+             table.remove( self.groups , #self.groups )\
+\
+        end \
+\
+    else warning( "Try to call method \'destroyAll\' on a group object ; petition denied" )\
+\
+    end \
+\
+end\
+\
+function g:getInfo( name )\
+\t\
+\tif type( name ) == "string" then \
+\
+     \tfor i = 1 , #self.groups do \
+\
+     \t\tlocal _g = self.groups[ i ]\
+\
+     \t\tif _g.tag == name then \
+                \
+                print( "GROUP: ".._g.tag.." #childs: "..#_g  )\
+                break \
+     \t\tend \
+\
+     \tend \
+\
+     elseif name == self then \
+\
+     \tprint( "_GROUPS: total of groups: "..#self.groups )\
+\
+     elseif name == true then \
+        \
+        separator( "_GROUPS" )\
+     \tfor i = 1 , #self.groups do \
+       \
+     \t\tlocal _g = self.groups[ i ] ; print( "GROUP: ".._g.tag.." #childs: "..#_g  )\
+\
+     \tend \
+     \tseparator( "_GROUPS" )\
+\
+     elseif name == nil then \
+        \
+         print( "GROUP: "..self.tag.." #childs: "..#self  )\
+\
+     end \t\
+\
+end\
+\
+function g:method( method_n , params )\
+\t\
+     if self.type == "group_parent" then \
+          \
+          for i = 1 , #self.groups do \
+              \
+              self.groups[i]:method( method_n , params )\
+\
+          end \
+\
+     elseif self.type == "group" then  \
+         \
+         local container = {} \
+         local params = params or {} \
+\
+         for i = 1 , #self do \
+          \
+          container[ i ] = { self[ i ][ method_n ]( self[ i ] , unpack( params ) ) } \
+\
+         end \
+        \
+        return container \
+     end \t\
+\
+end\
+\
+function g:setPos( name , obj , pos )\
+    \
+    if type( obj ) == "string" then \
+\
+     \tfor i = 1 , #self.groups do \
+\
+     \t\tlocal _g = self.groups[ i ]\
+\
+     \t\tif _g.tag == name then \
+                \
+                _g:setPos( obj , pos )\
+                break \
+     \t\tend \
+\
+        end \
+\
+    elseif type( name ) == "table" then \
+\
+           removeTable( self , name )\
+   \
+\t\t   if obj > 0 and obj <= #self then \
+\t\t      table.insert( self , obj , name )\
+\t\t   else \
+\t\t      self[ #self + 1 ] = name \
+\t\t   end \
+\
+    end \t\
+\
+end \
+\
+function g:getGroup( name )\
+\t\
+\tlocal g ; \
+\
+\tif self.type == "group_parent" and name ~= nil then \
+       \
+       for i = 1 , #self.groups do \
+            \
+            if self.groups[i].tag == name then \
+               \
+               g = self.groups[i]                  \
+\
+            end \
+\
+       end \
+\
+    elseif self.type ~= "group_parent" then \
+         warning( "Try to call \'getGroup\' method on a group object ; petition denied" )\
+\tend \
+   \
+   return g \
+end\
+\
+\
+',"@./.\\groups_lib.lua"))package.preload['view_lib']=assert(loadstring("\
+\
+local view = { views = {} }\
+\t  view.__index = view \
+\
+function display.new_view( x , y , w , h )\
+    \
+    local v = { x = 0 , y = 0 }\
+    \t  v.view = new_view( x , y , w , h )\
+    \t  v.follow = {}\
+    \
+    view.views[ #view.views + 1 ] = v \
+\
+    setmetatable( v , view )\t\
+   \
+   return v \
+end\
+\
+local function _move_( v , x , y )\
+ \
+\t for i = 1 , #v.follow do \
+\t     \
+\t     print( pcall( function() v.follow[i]:move( x , y ) end  ) )\
+\t    \
+\t end \
+     \
+     view_move( v.view , x  , y )\
+\
+end \
+\
+function view:move( x , y ) _move_( self , x , y ) end\
+\
+function view:moveX( x ) _move_( self , x , 0 ) end\
+\
+function view:moveY( y ) _move_( self , 0 , y ) end\
+\
+function view:getWalked() return view_getWalked( self.view ) end \
+\
+function view:setCenter( x , y ) view_setCenter( self.view , x , y ) end\
+\
+function view:getCenter() return view_getCenter( self.view ) end \
+\
+function view:setSize( w , h ) view_setSize( self.view , w  , h ) end  \
+\
+function view:getSize() return view_getSize( self.view ) end  \
+\
+function view:rotate( angle ) view_rotate( self.view , angle ) end \
+\
+function view:getRotation() return view_getRotation( self.view ) end \
+\
+function view:zoomIn( z ) view_zoomIn( self.view , z ) end \
+\
+function view:zoomOut( z ) view_zoomOut( self.view , z ) end \
+\
+function view:getZoom() return view_getZoom( self.view ) end \
+\
+function view:setViewport( x , y , w , h ) return view_setViewport( self.view , x , y , w , h ) end \
+\
+function view:getViewport() return view_getViewport( self.view ) end \
+\
+function view:reset( x , y , w , h ) view_reset( x , y , w , h ) end \
+\
+function view:destroy() removeTable( view.views , self ) end  \
+\
+function view:focus( t ) \
+  \
+  for i = 1 , #t do \
+  \tself.follow[ #self.follow + 1 ] = t[ i ]\
+  end \
+\
+end \
+\
+function view:unfocus( t ) \
+\
+  for i = 1 , #t do \
+  \tremoveTable( self.follow , t[i] )\
+  end \
+\
+end \
+\
+\
+\
+_VIEW = view ;\
+\
+\
+\
+\
+\
+\
+","@./.\\view_lib.lua"))package.preload['draw_lib']=assert(loadstring('\
+\
+_DRAW = {}\
+\
+\
+function bucle( w )\
+\
+  for v = 1 , #_VIEW.views do \
+       \
+       local _v = _VIEW.views[ v ]\
+\
+       _v.x , _v.y = _v:getWalked()\
+\
+  end \
+\
+  window_clear( w ) \
+\
+  Runtime:getEvent( "enterFrame" )\
+\
+  Physics:nextStep()\
+\
+  local _e = _EVENTS.enterFrame \
+  \
+    for i = 1 , #_e do \
+           \
+          if _e[i] then   \
+           _e[i]:getEnterFrame() \
+         end\
+\
+    end \
+\
+  _DRAW:draw()\
+\
+  -- draw_my_mov( w )\
+\
+  window_display( w )\
+\
+end \
+\
+\
+function _DRAW:move( obj , pos )  \
+   \
+   expectedVal( obj.draw , "function" , "_DRAW error: arg #1 is not a drawable object" )\
+\
+   result = removeTable( self , obj )\
+   \
+   if result then \
+\
+\t   if pos > 0 and pos <= #self then \
+\t      table.insert( self , pos , obj  )\
+\t   else \
+\t      self[ #self + 1 ] = obj \
+\t   end\
+\
+   end \
+\
+end\
+\
+function _DRAW:insert( obj , pos )  \
+   \
+   expectedVal( obj.draw , "function" , "_DRAW error: arg #1 is not a drawable object" )\
+   \
+   if not obj.group then \
+\
+\t   if pos then \
+\t      table.insert( self , pos , obj  )\
+\t   else \
+\t      self[ #self + 1 ] = obj \
+\t   end \
+\
+   else warning( "Try to insert in _DRAW an object that already have a group" )\
+\
+   end \
+\
+end\
+\
+function _DRAW:isDrawing( obj )  \
+   \
+  local result = false \
+\
+  for i = 1 , #self do \
+     if self[i] == obj then result = true end \
+     break \
+  end \
+   \
+   return result \
+end\
+\
+function _DRAW:remove( obj )  \
+   \
+    removeTable( self , obj )\
+\
+end\
+\
+\
+function _DRAW:draw()\
+\t\
+\tfor i = 1 , #self do \
+        \
+        self[i]:draw()\
+\
+\tend \
+\
+end\
+\
+\
+\
+',"@./.\\draw_lib.lua"))package.preload['transition_lib']=assert(loadstring('\
+-- global table.\
+transition = { trans = {} , type = "transition_parent" }\
+transition.__index = transition\
+\
+\
+function transition:new( obj , params )\
+\
+\tlocal ani_table = { status = "delayed" , tag = params.tag , type = "transition" }\
+        ani_table.onResume = params.onResume \
+        ani_table.onPause = params.onPause \
+        ani_table.actual_loop = 1 \
+\
+\tsetmetatable( ani_table , transition )\
+\
+\tself.trans[ #self.trans + 1 ] = ani_table\
+\t\
+\tlocal destroy_ani ; -- Animation destructor.\
+\
+\tlocal fps = _FPS.promedy \
+\tif fps == 0 then fps = _FPS.fps end \
+\tif fps == 0 then fps = 65 end \
+    \
+    local ratio = params.time * fps \
+    local updates = 0 \
+    local loops = params.loops or 1\
+\
+    local total_loops = 1\
+\
+    local _alpha = params.alpha or obj.alpha\
+    local obj_alpha = obj.alpha\
+    \
+    local obj_rot = obj:getRotation() \
+    local _rotation = params.rotation or obj_rot\
+\
+\
+\tlocal moveX = ( params.x or 0 ) / ratio \
+\tlocal moveY = ( params.y or 0 ) / ratio \
+\tlocal alpha = ( _alpha - obj.alpha ) / ratio  \
+\tlocal rotation = ( _rotation - obj_rot  ) / ratio \
+\
+\
+\tlocal function start_ani( self ) \
+\
+\t\tself:move( moveX , moveY ) ; \
+         \
+        local total_alpha = self.alpha + alpha  \
+        if not params.blink then \
+               if total_alpha > 100 then total_alpha = 100 end \
+        else\
+           if updates == 0 then  \
+\t           self:setAlpha( obj_alpha )\
+\t           total_alpha = obj_alpha + alpha\
+           end \
+        end \t\
+\
+\t\tself:setAlpha( total_alpha )\
+\t\tself:rotate( rotation )\
+\t\t\
+\t\tupdates = updates + 1\
+\
+\
+\t\t if updates >= ratio then\
+\t\t\t if loops > 1 or loops <= 0 then \
+\t\t\t    loops = loops - 1 \
+\t\t\t    total_loops = total_loops + 1\
+          ani_table.actual_loop = total_loops \
+\t\t\t    updates = 0\
+          if type( params.onLoop ) == "function" then params.onLoop( { target = obj , animation = ani_table , actual_loop = total_loops } ) end  \
+\t\t\t else \
+\t\t\t    destroy_ani() \
+\t\t\t end  \
+\t\t \t\
+\t\t end  \
+   \
+   end\
+\
+   function destroy_ani() -- Local declarada arriba.\
+       \
+       if self.status == "delayed" then \
+\
+   \t      ani_table._timer:stop()\
+\
+   \t   end \
+       \
+       ani_table.status = "destroyed"\
+       if type( params.onCancel ) == "function" then params.onCancel( { target = obj , animation = ani_table , actual_loop = total_loops } ) end\
+\
+   \t   obj:removeEvent( "enterFrame" , start_ani ) \
+   \t   removeTable( transition.trans , ani_table )\
+\
+   end  \
+   \
+    local function onStart()\
+        \
+        if not obj.isDestroy then\
+\
+\t      \tobj:addEvent( "enterFrame" , start_ani )\
+\t      \tani_table.status = "started" \
+\t      \tif type( params.onStart ) == "function" then params.onStart( { target = obj , animation = ani_table , actual_loop = total_loops } ) end\
+\
+\t      else warning( "Attemp to start a transition on a destroyed object ; petition denied." )\
+\
+        end \
+\
+    end \
+    \
+    params.delay = params.delay or 0 ;\
+\
+    if params.delay > 0 then \
+       ani_table._timer = _TIMERS:new( params.delay , onStart , 1 )\
+    else \
+    \tonStart()\
+    end  \t \
+   \
+   ani_table._starter = start_ani\
+   ani_table._destructor = destroy_ani\
+   ani_table._obj = obj  \
+\
+   return ani_table \
+end\
+\
+\
+\
+function transition:manage( action , tag )\
+      \
+    if self.type == "transition" then\
+\
+    \tif self.status == "started" and action == "pause" then \
+              \
+             local obj = self._obj \
+             local func = self._starter\
+            \
+             if not obj.isDestroyed then \
+             \tobj:removeEvent( "enterFrame" , func )\
+             \tself.status = "paused"\
+             end  \
+\
+             if type( self.onPause ) == "function" then self.onPause( { target = obj , animation = self , actual_loop = self.actual_loop } ) end  \
+\
+        elseif self.status == "paused" and action == "resume" then \
+\
+             local obj = self._obj \
+             local func = self._starter\
+            \
+             if not obj.isDestroyed then \
+             \tobj:addEvent( "enterFrame" , func )\
+             \tself.status = "started"\
+             end  \
+\
+             if type( self.onResume ) == "function" then self.onResume( { target = obj , animation = self , actual_loop = self.actual_loop } ) end  \
+\
+        elseif self.status ~= "destroyed" and ( action == "cancel" or action == "destroy" ) then \
+\
+             local obj = self._obj \
+             local func = self._destructor\
+            \
+             if not obj.isDestroyed then \
+             \tfunc()\
+             end          \t\
+\
+        end \
+\
+    elseif self.type == "transition_parent" then  \
+\
+    \t for i = 1 , #self.trans do \
+              \
+              local t = self.trans[i]\
+\
+              if t.tag == tag then \
+                  \
+                  t:manage( action )\
+\
+              end \t\
+              \
+    \t end \t\
+\
+    end   \
+\
+\
+end \
+\
+function transition:manageAll( action )\
+\t\
+\tif self.type == "transition_parent" then \
+\
+    \t for i = 1 , #self.trans do \
+              \
+            local t = self.trans[i]           \
+            t:manage( action )\
+\
+    \t end \
+\
+    else warning( "Attemp to apply the method \'manageAll\' on a transition object ; petition denied" )\
+\
+    end  \
+\
+end\
+\
+\
+',"@./.\\transition_lib.lua"))package.preload['physics_lib']=assert(loadstring('\
+\
+\
+local physics_aux = require "physics_aux"\
+\
+local physics = { worlds = {} , callbacks = {} }\
+\t    physics.__index = physics \
+\t    physics.step = physics_step\
+\t    physics.getPos = physics_getPos\
+\t    physics.removeList = {}\
+      physics.addList = {}\
+\t  -- physics.onEndStep "callbak cuando termina el paso de las fisicas."\
+\
+      setmetatable( physics , physics_aux )\
+\
+local typeof = { dynamic = 1 , static = 2 , kinematic = 3 }\
+local typenum = { "dynamic" , "static" , "kinematic" }\
+local type_form = { box = "box" , circle = "circle" , polygon = "polygon" }\
+local type_form_num = { "box" , "circle" , "polygon" }\
+local event_type = { "began" , "ended" }\
+\
+local my_id = 0\
+\
+function physics:new_world( gX , gY )\
+\t\
+\tgX = gX or 0 ; gY = gY or 10 ; \
+    \
+    local world = {}\
+          world.world = physics_newWorld( gX , gY ) \
+          world.members = {}\
+          world._type = "world"\
+\
+          self.worlds[ #self.worlds + 1 ] = world\
+\
+   return world ; \
+end\
+\
+function physics:add( world , obj , _type , form , rad )\
+\
+  form = type_form[ form ] ; if not form then form = "box" end \
+\
+\texpectedVal( world.world , "userdata" , "Physics error: " , true )\
+\texpectedVal( obj , "table" , "Physics error: " , true )\
+  expectedVal( _type , "string" , "Physics error: " , true )\
+  \
+  if not self:worldLocked( world ) then \
+\
+    \tif not obj._physics then \
+\
+    \t\tmy_id = my_id + 1 \
+\
+    \t\tlocal _world = world.world \
+\
+    \t\t  obj._physics = {}\
+        \
+    \t    obj:setAnchor( 0.5 , 0.5 )\
+           \
+    \t    local x , y = obj:getPos()\
+    \t    local w , h = obj:getContent()\
+    \t    local angle = obj:getRotation()\
+\
+    \t    w = w / 2 ; h = h / 2 ; \
+\
+          if form == "circle" then w , h = rad or w , 0 end \
+            \
+    \t    local _type = typeof[ _type ] ; if _type == nil then _type = 1 end \
+\
+    \t    obj._physics.userdata = physics_newObj( _world , x , y , w , h , _type , angle , my_id )\
+    \t    obj._physics.world = world\
+          obj._physics.my_id = my_id \
+          obj._physics.form = form \
+    \t    obj._physics.status = true\
+\
+    \t    world.members[ #world.members + 1 ] = obj \
+\
+    \t    physics.callbacks[ my_id ] = obj \
+\
+    \tend\
+\
+  else warning( "Attemp to add a new body when world is locked ; petition denied" )\
+\
+  end\
+\
+end\
+\
+function physics:remove( obj , pos )\
+\t\
+    if obj._type == "world" and obj.members then \
+          \
+          local n_count = #obj.members\
+          for i = 1 , n_count do \
+\
+                  self:remove( obj.members[ n_count ] , n_count )   \
+\
+          end \
+\
+          physics_deleteWorld( obj.world )\
+\
+          removeTable( self.worlds , obj )\
+\
+    elseif obj._physics then  \
+\
+    \t     physics_destroyObj( obj._physics.userdata ) -- destruye el puntero (c++) del objeto.\
+    \
+           local world = obj._physics.world \
+           \
+           -- remueve el obj de su mundo: \
+           if not pos then removeTable( world.members , obj ) \
+           else worlds.members[ pos ] = nil \
+           end \
+\
+           self.callbacks[ obj._physics.my_id ] = nil -- remueve el obj de las referencias al callback.\
+\
+           obj._physics = nil -- destruye las fisicas del objeto. \
+\
+           if type( obj.physics_destroy ) == "function" then \
+\
+             local r , e = pcall( function() obj.physics_destroy( obj ) end ) \
+\
+             if not r then print( r , e ) end \
+\
+           end \
+    \
+    else warning( "attemp to remove a non-physics object ; petition denied" )\
+\
+    end \
+\
+end\
+\
+\
+\
+function physics:nextStep() \
+\
+   for _worlds = 1 , #self.worlds do \
+          \
+          local w = self.worlds[ _worlds ]\
+\
+          self.step( w.world )\
+\
+          for _mem = 1 , #w.members do \
+              \
+                local obj = w.members[ _mem ]\
+                local ud = obj._physics.userdata\
+\
+                local pX , pY , pRot = physics_getPos( ud ) \
+             \
+                obj:setPos( pX , pY )\
+                obj:setRotation( pRot )\
+\
+          end \
+\
+   end \
+\
+   if self.onEndStep then self.onEndStep() end \
+   \
+   self:removeListObjs()\
+   self.removeList = nil \
+   self.removeList = {}\
+\
+end \
+\
+\
+function physics:getEvent( _type , a , b )\
+     \
+     local obj1 = self.callbacks[ a ]\
+     local obj2 = self.callbacks[ b ]\
+\
+     _type = event_type[ _type ]\
+\
+     if obj1 then\
+         \
+         if obj1._physics[ _type ] then obj1._physics[ _type ]( obj1 , obj2 ) end \
+\
+     end \
+\
+     if obj2 then\
+         \
+         if obj2._physics[ _type ] then obj2._physics[ _type ]( obj2 , obj1 ) end \
+\
+     end \
+\
+end\
+\
+function physics:resetShape( obj , rad ) -- Warning: no es type safe.\
+\
+    expectedVal( obj._physics , "table" , "Physcis error: invalid physics object" )\
+    \
+    local w , h = obj:getContent() ; w , h = w/2 , h/2 ; \
+    local form_num = type_form_num[ obj._physics.form ] \
+\
+    if form_num == 2 then w , h = rad or w , 0 end  \
+    \
+    if not self:worldLocked( obj._physics.world ) then  \
+      physics_resetShape( obj._physics.userdata , form_num , w , h )\
+    else\
+      warning( "Attemp to reset the body shape when world is locked ; petition denied" )\
+    end  \
+\
+end \
+\
+function physics:setBody( obj , _type )\
+\
+\t   expectedVal( obj._physics , "table" , "Physcis error: invalid physics object" )\
+    \
+\t   local _type = typeof[ _type ] ; if _type == nil then _type = 1 end \
+     \
+     if not self:isLocked( obj ) then \
+        physics_type( obj._physics.userdata , _type )\
+     else \
+        warning( "Attemp to change body Type when world is locked ; petition denied" )\
+     end \
+\
+end\
+\
+function physics:getBody( obj )\
+     expectedVal( obj._physics , "table" , "Physcis error: invalid physics object" ) \
+     return typenum[ physics_getType( obj._physics.userdata  ) ]  \
+end\
+\
+function physics:addEvent( obj , _type , listener )\
+\
+\t expectedVal( obj._physics , "table" , "Physcis error: invalid physics object" )\
+\
+\t expectedVal( _type , "string" , "Physcis error:" , true )\
+    \
+   expectedVal( listener , "function" , "Physcis error:" , true )\
+     \
+     if _type == "began" or _type == "ended" then \
+\
+     \tobj._physics[ _type ] = listener\
+\
+     else warning( "Theres is no \'".._type.."\' type on physics library" )\
+ \
+     end  \
+\
+end\
+\
+function physics:destroyObj( obj )\
+\
+\t expectedVal( obj._physics , "table" , "Physcis error: invalid physics object" )\t\
+\
+\t local list = self.removeList \
+\
+    list[ #list + 1 ] = obj  -- inserta el objeto en la lista de remocion.\
+\
+end\
+\
+function physics:removeListObjs()\
+\t\
+    for i = 1 , #self.removeList do -- itera en la lista de remocion para remover los objetos.  \
+\
+      local obj = self.removeList[ i ]\t\
+\
+      self:setActive( obj , false )\
+\
+      self:remove( obj )     \
+\
+    end \
+\
+end\
+\
+\
+function physics:getWorld( obj ) return physics_getWorld( obj._physics.userdata ) --[[ raw userdata ( b2World ) ]] end\
+\
+function physics:isWorldLocked( raw_world ) return physics_isWorldLocked( raw_world ) end \
+\
+function physics:worldLocked( world ) return physics_isWorldLocked2( world.world ) end -- [[ in this case , the pointer is physics::new_world ]]\
+\
+function physics:isLocked( obj ) return physics_isWorldLocked( physics_getWorld( obj._physics.userdata ) ) end  -- direct call ;\
+\
+Physics = physics ',"@./.\\physics_lib.lua"))package.preload['vision_lib']=assert(loadstring('\
+\
+-- make a rect/circle \
+-- clamp for circle-rect and viceversa.\
+-- overlap for rect-rect\
+-- distance between cicle radius for circle-circle.\
+\
+\
+local vision = {}\
+\t    vision.__index = vision \
+\
+function display.new_vision( params )\
+\t\
+\tlocal v = {}\
+\t      v.range = {} -- table to insert the objects inside the vision. \
+\
+        v.x = params.x or 0 ;\
+        v.y = params.y or 0 ;\
+\t      v.radius = params.r or 0 ;\
+\t      v.w = params.w or 0 ;\
+\t      v.h = params.h or 0 ;\
+\t      v.centerX = v.w / 2 ;\
+\t      v.centerY = v.h / 2 ;\
+\t      v.default = params.default or "box" ;\
+\t      v.prec = params.prec ; \
+\
+\t      if v.prec == nil then v.prec = true end \
+          \
+          setmetatable( v , vision )\
+\
+   return v ; \
+end\
+\
+local function getCenter( obj , prec )\
+\
+    local topX , topY , endX , endY = obj:getDimensions() \
+    local distX , distY = endX - topX , endY - topY ; \
+    local centerX , centerY = topX + ( distX * 0.5 ) , topY + ( distY * 0.5 ) ;   \
+    \
+    local mayor = distX ; \
+\
+    if distX < distY then \
+    \tif prec then \
+    \t\tmayor = distY\
+        end \
+    end  \
+\
+   return topX , topY , endX , endY , centerX , centerY , mayor ; \
+end \
+\
+local function clamp( min , max , val )\
+   \
+   if val < min then\
+       return min \
+   elseif val > max then \
+       return max \
+   else \
+       return val\
+   end  \
+\
+end \
+\
+local function vector( x1 , y1 , x2 , y2 ) \
+   \
+   local raw = ( ( x2 - x1 ) ^ 2 ) + ( ( y2 - y1 ) ^ 2 )  \
+\
+   local result = raw ^ ( 1/2 )\
+   \
+   return result \
+end \
+\
+local function isInside( minX , minY , maxX , maxY , pX , pY )\
+        if ( minX <= pX and pX <= maxX ) and ( minY <= pY and pY <= maxY ) then \
+             return true \
+        end  \t\
+end\
+\
+function vision:box( obj )\
+\
+\tlocal topX , topY , endX , endY , centerX , centerY , rad = getCenter( obj , self.prec )\
+    \
+    if obj._vision[1] == "circle" and not obj._vision[3] then \
+        \
+        local radio = obj._vision[2] or rad / 2 ; \
+\
+        local punto = {}\
+        \t  punto.x = clamp( self.x , self.w , centerX ) \
+        \t  punto.y = clamp( self.y , self.h , centerY ) \
+\
+        local centerDist = vector( centerX , centerY , self.centerX , self.centerY )\
+          \
+        if vector( self.centerX , self.centerY , punto.x , punto.y ) + radio >= centerDist then -- si la dist entre el punto mas cercano y el radio es mayor a la dist entre centros hay colision. \
+            \
+            local t = self.range ;\
+            t[ #t + 1 ] = { obj = obj , distanceX = centerX - self.centerX , distanceY = centerY - self.centerY } \
+\
+        end \
+\
+    elseif not obj._vision[3] then\
+\
+        local puntos = { { x = topX , y = topY } , { x = topX , y = endY } , { x = endX , y = endY } , { x = endX , y = topY } }\
+         \
+        local t = self.range ;\
+        for i = 1 , 4 do \
+             \
+             if isInside( self.x , self.y , self.w , self.h , puntos[i].x , puntos[i].y ) then \
+                t[ #t + 1 ] = { obj = obj , distanceX = centerX - self.centerX , distanceY = centerY - self.centerY } \
+                break \
+             end \
+\
+        end \
+\
+    end \
+\
+end\
+\
+function vision:circle( obj )\
+\
+\tlocal topX , topY , endX , endY , centerX , centerY , rad = getCenter( obj , self.prec )\
+    \
+    if obj._vision[1] == "circle" and not obj._vision[3] then \
+        \
+        local radio = obj._vision[2] or rad / 2 ; \
+          \
+        if self.radius + radio >= vector( self.x , self.y , centerX , centerY ) then -- si la dist entre el punto mas cercano y el radio es mayor a la dist entre centros hay colision. \
+            \
+            local t = self.range ;\
+            t[ #t + 1 ] = { obj = obj , distanceX = centerX - self.x , distanceY = centerY - self.y } \
+\
+        end \
+\
+    elseif not obj._vision[3] then\
+\
+        local radio = obj._vision[2] or rad / 2 ; \
+\
+        local punto = {}\
+        \t  punto.x = clamp( topX , endX , self.x ) \
+        \t  punto.y = clamp( topY , endY , self.y ) \
+\
+        local centerDist = vector( centerX , centerY , self.x , self.x )\
+          \
+        if vector( centerX , centerY , punto.x , punto.y ) + self.radius >= centerDist then -- si la dist entre el punto mas cercano y el radio es mayor a la dist entre centros hay colision. \
+            local t = self.range ;\
+            t[ #t + 1 ] = { obj = obj , distanceX = centerX - self.x , distanceY = centerY - self.x } \
+\
+        end \
+\
+    end \t\
+\
+end\
+\
+function vision:get( group , _type )\
+\t\
+\tlocal method = "box"\
+  local spr_t = group or _SPRITES \
+\
+\tif _type == "circle" or self.default == "circle" then method = "circle" end \
+\
+\tfor  i = 1 , #spr_t do \
+           \
+           self[ method ]( self , _SPRITES[ i ] )\
+\
+\tend\
+\
+\tlocal inside = self.range      \
+     \
+    self.range = nil ; \
+    self.range = {} \
+   \
+   return inside \
+end\
+\
+\
+function vision:getVector( x2 , y2 , _type ) \
+\
+\tlocal _x , _y = "centerX" , "centerY" ;\
+\
+\tif _type == "circle" or self.default == "circle" then _x , _y = "x" , "y" end \
+   \
+    local raw = ( ( x2 - self[_x] ) ^ 2 ) + ( ( y2 - self[_y] ) ^ 2 )  \
+\
+    local result = raw ^ ( 1/2 )\
+   \
+   return result \
+end',"@./.\\vision_lib.lua"))package.preload['particle_system']=assert(loadstring('\
+\
+\
+local lua_particle = { psys1 = {} }\
+\t  lua_particle.__index = lua_particle\
+\
+local events = require "animation_lib"\
+\
+\t  setmetatable( lua_particle , events )\
+\
+function display.newParticleSys1( max , window )\
+    \
+     local window = window or _WINDOWS.default ; \
+     if type( window ) == "number" then \
+     \t window = _WINDOWS[ window ] \
+     end \
+\
+    local psys = { isAlive = true , isDestroy = false } \
+          psys.window = window \
+          psys.userdata = psys1_new( max ) ;\
+          psys.max_particles = max \
+          psys.enterFrame = {} \
+          psys.inside = lua_particle.psys1\
+\
+          psys.gravity = { x = 0 , y = 5 }\
+          psys.impulse = { x = 0 , y = 0 , duration = 3 , swap = 3 }\
+          psys.des_acc = { x = 0 , y = 0.055 }\
+\
+          psys.distance = { x = 0 , y = 15 }\
+          psys.dispersion = { x = 50 , y = 0 }\
+\
+          psys.color = { A = { 255 , 255 , 255 , 255 } , B = { 255 , 0 , 0 , 255 } , 0.1 }\
+          \
+          psys.vanish = { ratio = 0 , start_time = 0.1 , life_time = 10 }\
+\
+          psys.opts = { impulse = true , color = true , fps = 60 }\
+\
+          setmetatable( psys , lua_particle ) \
+          \
+          local inside = psys.inside\
+                inside[ #inside + 1 ] = psys  \
+\
+          _DRAW:insert( psys )\
+\
+    return psys  \
+end \
+\
+function lua_particle:draw()\
+   self.window:draw_psys( self )\
+end \
+\
+function lua_particle:addStep( x , y )\
+   psys1_addStep( self.userdata , x , y ) \
+end\
+\
+function lua_particle:add( x , y )\
+   psys1_add( self.userdata , x , y )\
+end \
+\
+function lua_particle:step()\
+  psys1_step( self.userdata )\
+end\
+\
+function lua_particle:setLifeTime( time )\
+  self.vanish.life_time = time\
+  psys1_setLifeTime( self.userdata , time )\
+end\
+\
+function lua_particle:setFPS( fps )\
+  self.opts.fps = fps\
+  psys1_setFps( self.userdata , fps )\
+end \
+\
+function lua_particle:optimize( imp , color )\
+  self.opts.impulse = imp \
+  self.opts.color = color \
+  psys1_setOptimizations( self.userdata , imp , color )\
+end \
+\
+function lua_particle:setColors( c1 , c2 , grad_time )\
+\
+\tlocal _c = c1 ; \
+\tfor i = 1 , #c2 do\
+       _c[ #_c + 1 ] = c2[ i ] \
+\tend \
+\t_c[ #_c + 1 ] = grad_time \
+\
+\tpsys1_setColors( self.userdata , unpack( _c ) ) -- must have 10 elements.\
+end\
+\
+function lua_particle:setPhysics()\
+\tlocal Gx , Gy = self.gravity.x , self.gravity.y ; \
+\tlocal impX , impY = self.impulse.x , self.impulse.y ; \
+\tlocal desX , desY = self.des_acc.x , self.des_acc.y ;\
+\tpsys1_setPhysics( self.userdata , Gx , Gy , impX , impY , desX , desY )\
+end\
+\
+function lua_particle:setGravity( gx , gy )\
+\tself.gravity = { x = gx , y = gy } \
+\tself:setPhysics() \
+end\
+\
+function lua_particle:setImpulse( x , y )\
+\tself.impulse = { x = x , y = y } \
+\tself:setPhysics() \
+end\
+\
+function lua_particle:setDesAcc( x , y )\
+\tself.des_acc = { x = x , y = y } \
+\tself:setPhysics() \
+end\
+\
+function lua_particle:setImpulseTimes( duration , swap )\
+\tself.impulse.duration = duration \
+\tself.impulse.swap = swap \
+\tpsys1_setImpTime( self.userdata , duration , swap )\
+end\
+\
+function lua_particle:setDispersion( x , y )\
+  self.dispersion.x , self.dispersion.y = x , y ;\
+  psys1_setDispersion( self.userdata , x , y )\
+end\
+\
+function lua_particle:setDistance( x , y )\
+  self.distance.x , self.distance.y = x , y ;\
+  psys1_setDistance( self.userdata , x , y )\
+end\
+\
+function lua_particle:setFade( ratio , start_time )\
+  self.ratio , self.start_time = ratio , start_time ;\
+  psys1_setFade( self.userdata , ratio , start_time )\
+end\
+\
+function lua_particle:addEvent( func )\
+\
+\texpectedVal( func , "function" , "Particle Sys1 ERROR:" , true )\
+\
+\tlocal e = self.enterFrame\
+          e[ #e + 1 ] = func    \
+\
+    if #e == 1 then \
+        local g_e = _EVENTS[ "enterFrame" ] \
+              g_e[ #g_e + 1 ] = self ;\
+    end \
+\
+end\
+\
+function lua_particle:removeEvent( func )\
+\
+\texpectedVal( func , "function" , "Particle Sys1 ERROR:" , true )\
+\
+\tlocal e = self.enterFrame  \
+\
+    removeTable( e , func ) \
+\
+    if #e == 0 then removeTable( _EVENTS[ "enterFrame" ] , self ) end \
+\
+end\
+\
+function lua_particle:remove()\
+    \
+    if self.isAlive then \
+       \
+       self.isAlive = false \
+\
+       if not self.group then removeTable( _DRAW , self ) else removeTable( self.group , self ) end \
+\
+    end \
+\
+end\
+\
+function lua_particle:add()\
+\t\
+\tif not self.isAlive and not self.isDestroy then \
+\
+\t\tself.isAlive = true \
+\
+\t\tif not self.group then _DRAW:insert( self ) else self.group:insert( { self } ) end\
+\
+\tend \
+\
+end\
+\
+function lua_particle:destroy()\
+   \
+    if not self.isDestroy then \
+\
+        self.isDestroy = true \
+        self:remove()\
+        removeTable( self.inside , self )\
+       \tpsys1_delete( self.image ) \
+        self.userdata = nil \
+\
+        if #self.enterFrame > 0 then removeTable( _EVENTS[ "enterFrame" ] , self ) end \
+\
+    end \
+\
+end\
+\
+\
+',"@./.\\particle_system.lua"))package.preload['vortex-engine']=assert(loadstring('\
+\
+local function start()\
+\
+vortex_engine.__index = vortex_engine\
+vortex_engine.__newindex = function( t , k , v )\
+  \
+\
+  if type( vortex_engine[ k ] ) == "function" then \
+      \
+     warning( "Attemp to overwrite a required global for the engine ; (see below) " )\
+     print( "Details: Var name: "..k , "value: "..tostring( v ) )\
+\
+  else \
+    \
+    rawset( t , k , v )\
+\
+  end \
+\
+end\
+setmetatable( _G , vortex_engine )\
+\
+\
+require( "math_import" )\
+require( "fps_lib" )\
+require( "events_lib" )\
+require( "runtime_lib" )\
+require( "keyboard_lib" )\
+require( "sprite_lib" ) \
+require( "text_lib" )\
+require( "texture_lib" )\
+require( "window_lib" ) \
+require( "timers_lib" )\
+require( "groups_lib" )\
+require( "view_lib" )\
+require( "draw_lib" )\
+require( "transition_lib" )\
+require( "physics_lib" )\
+require( "vision_lib" )\
+require( "particle_system" )\
+\
+end \
+\
+local msg , err = pcall( start )\
+\
+if err then \
+  print( err )\
+  error()\
+end \
+  ',"@./.\\vortex-engine.lua"))
