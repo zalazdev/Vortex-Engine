@@ -6,7 +6,7 @@ How to load the exmaples?
 
 -- or --
 
-1) Make a direct access of the engine's executable to the example file.
+1) Make a direct access of the engine's executable to the example dir.
 2) Drag the example file to the direct access of the engine's executable.
 
 
